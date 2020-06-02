@@ -14,7 +14,7 @@ MainServer.o: MainServer.c  functions.h
 MainCliente: MainCliente.o
 		$(CC) $(CFLAGS) MainCliente.o -o MainCliente
 
-MainServer: MainServer.o functions.o
+MainServer: MainServer.o 
 		$(CC) $(CFLAGS) -o MainServer.o -o MainServer
 		
 all:
