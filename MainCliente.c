@@ -6,8 +6,6 @@
 #include <fcntl.h>
 
 
-
-
 int wrtToFIFO(char const *nameFifo){
     int fd;
 
@@ -33,7 +31,12 @@ int wrtToFIFO(char const *nameFifo){
 
 
 int main(int argc, char const *argv[]) {
+    const char *myfifo = "../SO/cliente";
+    wrtToFIFO(myfifo);
 
-    wrtToFIFO(*argv);
     return 0;
 }
+
+
+
+
