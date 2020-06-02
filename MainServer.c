@@ -5,6 +5,25 @@
 #include <string.h>
 #include "functions.h"
 
+
+
+void histTerm(){
+
+    int tarefasFile,tarefas;
+    char buf[100];
+    
+    while((tarefas = open("../SO/TarefasTerminadas.txt",O_RDONLY)) > 0) {
+        int readBytes = 0;
+        while((readBytes = read(tarefas,buf,100)) > 0) {
+            write(1,buf,readBytes);
+        }
+         close(readBytes);
+    }
+    close(tarefas);
+    
+}
+
+
 int main(int argc, char const *argv[]) {
     int fdfifo, fdfile;
     char * command, *option;
@@ -37,6 +56,7 @@ int main(int argc, char const *argv[]) {
             }
             else if(strcmp(option,"-r") == 0 || strcmp(option,"historico") == 0) {
                 printf("r option with: %s",command);
+                histTerm();
             }
             else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
                 printf("h option with: %s",command);
