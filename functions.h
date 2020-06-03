@@ -1,7 +1,18 @@
 #ifndef functions_h
 #define functions_h
 
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <signal.h>
+#include <sys/types.h>
+
+char* mySep(char* tok, char* buf, char delim);
+int executar(char* buf);
+void histTerm();
+int terminarTarefa(int* tarefasExec, int* pidsExec, int used, int tarefasTerminadas, char*command);
+
 #endif
 
-ssize_t readln(int fd, char*line, size_t size);
-int terminarTarefa(int* tarefasExec, int* pidsExec, int used, int tarefasTerminadas, char*command);
