@@ -9,5 +9,6 @@
 
 char* mySep(char* tok, char* buf, char delim);
 int executar(char* buf);
+int executarBash(char ** ex);
 
 #endif

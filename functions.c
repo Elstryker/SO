@@ -10,16 +10,96 @@ char* mySep(char* tok, char *buf, char delim) {
 }
 
 int executar(char * buf) {
-    if(fork() == 0) {
-        char**ex, **line;
-        line = malloc(10 * sizeof(char*));
-        ex = malloc(10 * sizeof(char*));
-        int i = 0, fd_pipe[2];
-        ex[i++] = strtok(buf," ");
-        while((ex[i++] = strtok(NULL," \n")) != NULL);
-        ex[i++]=NULL;
-        pipe(fd_pipe);
-        execvp(ex[0],ex);
+    char**ex, **line;
+    int fdin, fdout;
+    line = malloc(10 * sizeof(char*));
+    ex = malloc(10 * sizeof(char*));
+    int indexEx = 0, indexLine = 0, nmrPipes = 0;
+    // Partir comando por pipes
+    line[indexLine++] = strtok(buf,"|");
+    while((line[indexLine++] = strtok(NULL,"|\n")) != NULL);
+    indexLine--;
+    // Criação do numero de pipes necessários
+    nmrPipes = indexLine - 2;
+    int fd_pipe[nmrPipes+1][2];
+    pipe(fd_pipe[0]);
+    // Partir primeiro comando em espaços 
+    ex[indexEx++] = strtok(line[0]," \n");
+    while((ex[indexEx++] = strtok(NULL," \n")) != NULL);
+    indexEx--;
+    ex[indexEx]=NULL;
+    // Executar comando sem pipes
+    if(nmrPipes < 0) {
+        if(fork() == 0) {
+            execvp(ex[0],ex);
+            _exit(1);
+        }
+    }
+    // Executar comando com apenas 1 fd_pipe[0]
+    else if(nmrPipes == 0) {
+        if(fork() == 0) {
+            dup2(fd_pipe[0][1],1);
+            close(fd_pipe[0][1]);
+            close(fd_pipe[0][0]);
+            execvp(ex[0],ex);
+            _exit(1);
+        }
+        close(fd_pipe[0][1]);
+        // Partir o segundo comando
+        indexEx = 0;
+        ex[indexEx++] = strtok(line[1]," \n");
+        while((ex[indexEx++] = strtok(NULL," \n")) != NULL);
+        indexEx--;
+        ex[indexEx]=NULL;
+        if(fork() == 0) {
+            dup2(fd_pipe[0][0],0);
+            close(fd_pipe[0][0]);
+            execvp(ex[0],ex);
+            _exit(1);
+        }
+        close(fd_pipe[0][0]);
+    }
+    // Caso haja 2 ou mais pipes
+    else if(nmrPipes > 0) {
+        int pipenmr;
+        if(fork() == 0) {
+            dup2(fd_pipe[0][1],1);
+            close(fd_pipe[0][1]);
+            execvp(ex[0],ex);
+            _exit(1);
+        }
+        close(fd_pipe[0][1]);
+        for(pipenmr = 0; pipenmr < nmrPipes; pipenmr++) {
+            pipe(fd_pipe[pipenmr+1]);
+            indexEx = 0;
+            ex[indexEx++] = strtok(line[pipenmr+1]," \n");
+            while((ex[indexEx++] = strtok(NULL," \n")) != NULL);
+            indexEx--;
+            ex[indexEx]=NULL;
+            if(fork() == 0) {
+                dup2(fd_pipe[pipenmr][0],0);
+                dup2(fd_pipe[pipenmr+1][1],1);
+                close(fd_pipe[pipenmr+1][1]);
+                close(fd_pipe[pipenmr][0]);
+                execvp(ex[0],ex);
+                _exit(1);
+            }
+            close(fd_pipe[pipenmr][0]);
+            close(fd_pipe[pipenmr+1][1]);
+        }
+        close(fd_pipe[pipenmr][1]);
+        indexEx = 0;
+        ex[indexEx++] = strtok(line[pipenmr+1]," \n");
+        while((ex[indexEx++] = strtok(NULL," \n")) != NULL);
+        indexEx--;
+        ex[indexEx] = NULL;
+        if(fork() == 0) {
+            dup2(fd_pipe[pipenmr][0],0);
+            close(fd_pipe[pipenmr][0]);
+            execvp(ex[0],ex);
+            _exit(1);
+        }
+        close(fd_pipe[pipenmr][0]);
     }
     return 0;
 }
