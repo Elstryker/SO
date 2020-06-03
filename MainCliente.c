@@ -19,17 +19,17 @@ int wrtToFIFO(char const *nameFifo){
     char *option = malloc(5 * sizeof(char));
     int bytesRead = 0;
     while((bytesRead = read(0,buffer,100)) >0){
+        char* aux = buffer;
         buffer = mySep(option,buffer,' ');
-        write(1,option,strlen(option));
-        write(1,buffer,strlen(buffer));
+        buffer = aux;
         if( strcmp(option,"-m") == 0 || strcmp(option,"-e") == 0 || strcmp(option,"-l") == 0 ||
             strcmp(option,"-t") == 0 || strcmp(option,"-r") == 0 || strcmp(option,"-h") == 0 || strcmp(option,"-o") == 0){
                 perror("comando inválido\n");
             }
-      /*  else if(write(fd,option,strlen(option)) < 0 ) {
+        else if(write(fd,buffer,bytesRead) < 0 ) {
             perror("write");
             exit(1);
-        }*/
+        }
     }
 
     close(fd);
