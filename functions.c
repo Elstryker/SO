@@ -1,9 +1,10 @@
 
 #include "functions.h"
 
+extern int pid;
 
 void histTerm(){
-    int tarefasFile,tarefas;
+    int tarefas;
     char buf[100];
     while((tarefas = open("../SO/TarefasTerminadas.txt",O_RDONLY)) > 0) {
         int readBytes = 0;
@@ -27,7 +28,6 @@ char* mySep(char* tok, char *buf, char delim) {
 
 int executar(char * buf) {
     char**ex, **line;
-    int fdin, fdout;
     line = malloc(10 * sizeof(char*));
     ex = malloc(10 * sizeof(char*));
     int indexEx = 0, indexLine = 0, nmrPipes = 0;
@@ -46,10 +46,11 @@ int executar(char * buf) {
     ex[indexEx]=NULL;
     // Executar comando sem pipes
     if(nmrPipes < 0) {
-        if(fork() == 0) {
+        if((pid = fork()) == 0) {
             execvp(ex[0],ex);
             _exit(1);
         }
+        alarm(4);
     }
     // Executar comando com apenas 1 fd_pipe[0]
     else if(nmrPipes == 0) {
