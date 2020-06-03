@@ -1,3 +1,4 @@
+
 #include "functions.h"
 
 extern int pid;
@@ -118,4 +119,22 @@ int executar(char * buf) {
         close(fd_pipe[pipenmr][0]);
     }
     return 0;
+}
+
+int terminarTarefa(int* tarefasExec, int* pidsExec, int used, int tarefasTerminadas, char*command){
+    int k = -1;
+    for(int i=0; i<used; i++){
+        if(tarefasExec[i]==atoi(command)){
+            if(pidsExec[i]!=-1){
+                k=0;
+                //matar tarefa
+                k = kill(pidsExec[i],SIGINT);
+                //copiar para ficheiro de terminadas
+                write(tarefasTerminadas, command, 10);
+				pidsExec[i] = -1;
+                break;
+            }
+        }
+ 	}
+    return k;
 }

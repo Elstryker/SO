@@ -39,7 +39,10 @@ int wrtToFIFO(char const *nameFifo){
 
 int main(int argc, char const *argv[]) {
     const char *myfifo = "../SO/fifo";
+<<<<<<< HEAD
+=======
 
+>>>>>>> aaa906e23391c7827f252854ec3d7a79bff89111
     wrtToFIFO(myfifo);
 
     return 0;
