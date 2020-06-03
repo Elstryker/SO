@@ -45,8 +45,9 @@ int main(int argc, char const *argv[]) {
             }
             else if(strcmp(option,"-t") == 0 || strcmp(option,"terminar") == 0) {
                 int r = terminarTarefa(tarefasExec,pidsExec,used,tarefasTerminadas,buf);
-                if(r==0) printf("Tarefa não está em execução");
-                else printf("Tarefa terminada");
+                if(r==0) printf("Tarefa terminada");
+                else if (r==-1) printf("Não foi possível terminar a tarefa");
+                else printf("Tarefa não está em execução");
                 printf("t option with: %s",buf);
             }
             else if(strcmp(option,"-r") == 0 || strcmp(option,"historico") == 0) {

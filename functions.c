@@ -121,11 +121,10 @@ int executar(char * buf) {
 }
 
 int terminarTarefa(int* tarefasExec, int* pidsExec, int used, int tarefasTerminadas, char*command){
-    int k = -1;
+    int k = 1;
     for(int i=0; i<used; i++){
         if(tarefasExec[i]==atoi(command)){
             if(pidsExec[i]!=-1){
-                k=0;
                 //matar tarefa
                 k = kill(pidsExec[i],SIGINT);
                 //copiar para ficheiro de terminadas
