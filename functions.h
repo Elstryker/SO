@@ -6,9 +6,10 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+#include <sys/types.h>
 
 char* mySep(char* tok, char* buf, char delim);
 int executar(char* buf);
-int executarBash(char ** ex);
 
 #endif

@@ -1,7 +1,5 @@
 #include "functions.h"
 
-
-
 void histTerm(){
 
     int tarefasFile,tarefas;
@@ -18,8 +16,17 @@ void histTerm(){
     
 }
 
+int tempo_inactividade = -1;
+
+void sigint_handler(int signum) {
+    
+}
 
 int main(int argc, char const *argv[]) {
+    if(signal(SIGINT,sigint_handler)==SIG_ERR) {
+        perror("Error");
+        exit(1);
+    }
     int fdfifo, fdfile;
     char * buf, *option;
     if((fdfile = open("../SO/logs.txt",O_WRONLY | O_TRUNC | O_CREAT)) < 0) {
