@@ -31,7 +31,7 @@ int wrtToFIFO(char const *nameFifo){
 
 
 int main(int argc, char const *argv[]) {
-    const char *myfifo = "../SO/cliente";
+    const char *myfifo = "../SO/fifo";
     wrtToFIFO(myfifo);
 
     return 0;

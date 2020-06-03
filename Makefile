@@ -9,7 +9,7 @@ MainCliente: MainCliente.o
 MainServer: MainServer.o
 		$(CC) MainServer.o -o MainServer
 all:
-	mkfifo cliente
+	mkfifo fifo
 		make allprog
 
 

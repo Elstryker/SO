@@ -6,10 +6,19 @@
 #include "functions.h"
 
 int main(int argc, char const *argv[]) {
-    int fdfifo, fdfile;
+    int fdfifo, fdfile, tarefasTerminadas;
+    int tam = 1, used=1;
+    int* tarefasExec = malloc(sizeof(int));
+    int* pidsExec = malloc(sizeof(int));
+    //array numeros tarefas em execuçao
+    //array pid associados as tarefas
     char * command, *option;
     char buf[100];
-    if((fdfile = open("../SO/logs.txt",O_WRONLY | O_TRUNC | O_CREAT)) < 0) {
+    if((fdfile = open("../SO/logs.txt",O_RDONLY | O_WRONLY | O_TRUNC | O_CREAT)) < 0) {
+        perror("File not found");
+        exit(1);
+    }
+    if((tarefasTerminadas = open("../SO/tarefasTerminadas.txt",O_WRONLY | O_TRUNC | O_CREAT)) < 0) {
         perror("File not found");
         exit(1);
     }
@@ -33,6 +42,9 @@ int main(int argc, char const *argv[]) {
                 printf("l option with: %s",command);
             }
             else if(strcmp(option,"-t") == 0 || strcmp(option,"terminar") == 0) {
+                int r = terminarTarefa(tarefasExec,pidsExec,used,tarefasTerminadas,command);
+                if(r==0) printf("Tarefa não está em execução");
+                else printf("Tarefa terminada");
                 printf("t option with: %s",command);
             }
             else if(strcmp(option,"-r") == 0 || strcmp(option,"historico") == 0) {
