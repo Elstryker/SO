@@ -19,10 +19,9 @@ void histTerm(){
     }   
 }
 
-
 char* mySep(char* tok, char *buf, char delim) {
     int i;
-    for(i = 0; buf[i]!=delim && buf[i] != '\n'; i++) {
+    for(i = 0; buf[i]!=delim && buf[i] != '\n' && buf[i] != NULL; i++) {
         tok[i] = buf[i];
     }
     tok[i] = '\0';
