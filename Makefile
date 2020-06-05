@@ -21,6 +21,7 @@ MainServer: MainServer.o functions.o
 		
 all:
 	mkfifo fifo
+	mkfifo wr 
 	make allprog
 
 

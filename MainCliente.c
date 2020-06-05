@@ -7,10 +7,18 @@
 #include <string.h>
 #include "functions.h"
 
-int pid;
+int* pid;
 int nPids;
+int exec;
 int tempomaxexec;
 int maxPipeTime;
+char** nTarefasExec;
+int* pidsExec;
+int* tarefasExec;
+int used;
+int tam;
+int fd_pipePro[2];
+
 
 int wrtToFIFO(char const *nameFifo,char *argv[],int argc){
     int fd;
@@ -63,9 +71,30 @@ int wrtToFIFO(char const *nameFifo,char *argv[],int argc){
     return 0;
 }
 
+int rdFromFIFO(const char *myserver){
+    int fd;
+    if((fd = open(myserver,O_RDONLY)) < 0 ){
+        perror("open");
+        exit(1);
+    }
+    int bytesRead=0;
+    char *buffer = malloc(100 * sizeof(char));
+    while((bytesRead = read(fd,buffer,100)) > 0){
+        if(write(0,buffer,strlen(buffer)) < 0){
+            perror("write");
+            exit(1);
+        }
+        close(fd);
+    }
+    
+return 0;
+}
+
 int main(int argc,char*argv[]) {
     const char *myfifo = "../SO/fifo";
+    const char *myserver = "../SO/wr";
     wrtToFIFO(myfifo,argv,argc);
+    rdFromFIFO(myserver);
     return 0;
 }
 

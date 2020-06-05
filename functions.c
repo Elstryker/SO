@@ -5,14 +5,21 @@ extern int* pid;
 extern int nPids;
 extern int tempomaxexec;
 extern int maxPipeTime;
+extern char** nTarefasExec;
+extern int* pidsExec;
+extern int* tarefasExec;
+extern int used;
+extern int tam;
+extern int fd_pipePro[2];
 
 void histTerm(){
     int tarefas;
     char buf[100];
+    int server = open("../SO/wr",O_WRONLY);
     while((tarefas = open("../SO/TarefasTerminadas.txt",O_RDONLY)) > 0) {
         int readBytes = 0;
         while((readBytes = read(tarefas,buf,100)) > 0) {
-            write(1,buf,readBytes);
+            write(server,buf,readBytes);
         }
         close(readBytes);
         close(tarefas);
@@ -21,7 +28,7 @@ void histTerm(){
 
 char* mySep(char* tok, char *buf, char delim) {
     int i;
-    for(i = 0; buf[i]!=delim && buf[i] != '\n' && buf[i] != NULL; i++) {
+    for(i = 0; buf[i]!=delim && buf[i] != '\n' && buf[i]; i++) {
         tok[i] = buf[i];
     }
     tok[i] = '\0';
@@ -29,7 +36,8 @@ char* mySep(char* tok, char *buf, char delim) {
 }
 
 int executar(char * buf) {
-    if(fork() == 0) {
+    int filho = -1;
+    if(filho=fork() == 0) {
         nPids = 0;
         printf("Execute PID %d\n",getpid());
         char**ex, **line;
@@ -107,7 +115,6 @@ int executar(char * buf) {
                     _exit(1);
                 }
                 if(maxPipeTime > 0) alarm(maxPipeTime);
-                wait(NULL);
                 close(fd_pipe[0][1]);
                 for(pipenmr = 0; pipenmr < nmrPipes; pipenmr++) {
                     pipe(fd_pipe[pipenmr+1]);
@@ -125,7 +132,6 @@ int executar(char * buf) {
                         _exit(1);
                     }
                     if(maxPipeTime > 0) alarm(maxPipeTime);
-                    wait(NULL);
                     close(fd_pipe[pipenmr][0]);
                     close(fd_pipe[pipenmr+1][1]);
                 }
@@ -141,32 +147,45 @@ int executar(char * buf) {
                     execvp(ex[0],ex);
                     _exit(1);
                 }
-                if(maxPipeTime < 0) alarm(maxPipeTime);
+                if(maxPipeTime > 0) alarm(maxPipeTime);
                 wait(NULL);
                 close(fd_pipe[pipenmr][0]);
+                _exit(0);
             }
             if(tempomaxexec > 0)
                 alarm(tempomaxexec);
         }
         int status;
-        wait(&status);
-        if(WIFSIGNALED(status)) {
-            write(1,"Signaled!\n",20);
-        }
+        int pidusr;
+        pidusr = wait(&status);
+        write(fd_pipePro[1],&pidusr,sizeof(int));
+        kill(getppid(),SIGUSR1);
         _exit(0);
     }
+    if(used==tam){
+        nTarefasExec = realloc(nTarefasExec, 2*tam*sizeof(int));
+        tarefasExec =  realloc(tarefasExec, 2*tam*sizeof(char*));
+        pidsExec = realloc(pidsExec, 2*tam*sizeof(char*));
+        tam *= 2;
+    }
+    nTarefasExec[used] = used;
+    tarefasExec[used] = buf;
+    pidsExec[used] = filho;
+    used++;
     return 0;
 }
 
-int terminarTarefa(int* tarefasExec, int* pidsExec, int used, int tarefasTerminadas, char*command){
+int terminarTarefa(int tarefasTerminadas,char*command){
     int k = 1;
+    int n = atoi(command);
     for(int i=0; i<used; i++){
-        if(tarefasExec[i]==atoi(command)){
+        if(nTarefasExec[i]==n){
             if(pidsExec[i]!=-1){
                 //matar tarefa
                 k = kill(pidsExec[i],SIGINT);
                 //copiar para ficheiro de terminadas
-                write(tarefasTerminadas, command, 10);
+                char** s = {command, tarefasExec[n]};
+                write(tarefasTerminadas, s, strlen(s));
 				pidsExec[i] = -1;
                 break;
             }
@@ -174,3 +193,4 @@ int terminarTarefa(int* tarefasExec, int* pidsExec, int used, int tarefasTermina
  	}
     return k;
 }
+

@@ -13,7 +13,7 @@
 char* mySep(char* tok, char* buf, char delim);
 int executar(char* buf);
 void histTerm();
-int terminarTarefa(int* tarefasExec, int* pidsExec, int used, int tarefasTerminadas, char*command);
+int terminarTarefa(int tarefasTerminadas, char*command);
 
 #endif
 
