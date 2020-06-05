@@ -5,12 +5,13 @@ extern int* pid;
 extern int nPids;
 extern int tempomaxexec;
 extern int maxPipeTime;
-extern char** nTarefasExec;
+extern char** tarefasExec;
 extern int* pidsExec;
-extern int* tarefasExec;
+extern int* nTarefasExec;
 extern int used;
 extern int tam;
 extern int fd_pipePro[2];
+extern int nTarefa;
 
 void histTerm(){
     int tarefas;
@@ -36,7 +37,7 @@ char* mySep(char* tok, char *buf, char delim) {
 
 int executar(char * buf) {
     int filho = -1;
-    if(filho=fork() == 0) {
+    if((filho=fork()) == 0) {
         nPids = 0;
         printf("Execute PID %d\n",getpid());
         char**ex, **line;
@@ -161,17 +162,38 @@ int executar(char * buf) {
         kill(getppid(),SIGUSR1);
         _exit(0);
     }
-    if(used==tam){
-        nTarefasExec = realloc(nTarefasExec, 2*tam*sizeof(int));
-        tarefasExec =  realloc(tarefasExec, 2*tam*sizeof(char*));
-        pidsExec = realloc(pidsExec, 2*tam*sizeof(char*));
-        tam *= 2;
-    }
-    nTarefasExec[used] = used;
-    tarefasExec[used] = buf;
-    pidsExec[used] = filho;
-    used++;
+    
+    adicionarTarefa(filho, buf);    
     return 0;
+}
+
+
+void adicionarTarefa(int filho, char* buf){
+    int fg = 0;
+    for(int k = 0; k<used && fg==0; k++){
+        if(pidsExec[k]==-1){
+            nTarefasExec[k] = nTarefa;
+            tarefasExec[k] = malloc(strlen(buf) * sizeof(char));
+            strcpy (tarefasExec[k],buf);
+            pidsExec[k] = filho;
+            nTarefa++;
+            fg = 1;
+        }
+    }
+    if(fg==0){
+        if(used==tam){
+            nTarefasExec = realloc(nTarefasExec, 2*tam*sizeof(int));
+            tarefasExec = realloc(tarefasExec, 2*tam*sizeof(char*));
+            pidsExec = realloc(pidsExec, 2*tam*sizeof(char*));
+            tam *= 2;
+        }
+        nTarefasExec[used] = nTarefa;
+        tarefasExec[used] = malloc(strlen(buf) * sizeof(char));
+        strcpy (tarefasExec[used],buf);
+        pidsExec[used] = filho;
+        nTarefa++;
+        used++;
+    }
 }
 
 int terminarTarefa(int tarefasTerminadas,char*command){
@@ -183,7 +205,8 @@ int terminarTarefa(int tarefasTerminadas,char*command){
                 //matar tarefa
                 k = kill(pidsExec[i],SIGINT);
                 //copiar para ficheiro de terminadas
-                char** s = {command, tarefasExec[n]};
+                char* s =  malloc(100*sizeof(char*));
+                sprintf(s, "#%i, Interrompida: %s \n", n, tarefasExec[i]); //TAREFAS EXEC N ESTA MAL 
                 write(tarefasTerminadas, s, strlen(s));
 				pidsExec[i] = -1;
                 break;

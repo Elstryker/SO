@@ -5,12 +5,13 @@ int nPids;
 int exec;
 int tempomaxexec;
 int maxPipeTime;
-char** nTarefasExec;
+char** tarefasExec;
 int* pidsExec;
-int* tarefasExec;
+int* nTarefasExec;
 int used;
 int tam;
 int fd_pipePro[2];
+int nTarefa;
 
 void alrm_hand(int signum) {
     for(int x = nPids-1; x >= 0; x--) {
@@ -51,11 +52,14 @@ int main(int argc, char const *argv[]) {
     pipe(fd_pipePro);
     pid = malloc(10 * sizeof(int));
     nPids = 0;
+    nTarefa=0;
     tam = 1;
-    used=1;
+    used=0;
     tarefasExec = malloc(sizeof(char*));
     nTarefasExec = malloc(sizeof(int));
+    nTarefasExec[0] = -2;
     pidsExec = malloc(sizeof(int));
+    pidsExec[0] = 0;
     option = malloc(5 * sizeof(char));
     buf = malloc(100 * sizeof(char));
     signal(SIGALRM,alrm_hand);
@@ -75,6 +79,7 @@ int main(int argc, char const *argv[]) {
                 tempomaxexec = atoi(buf);
             }
             else if(strcmp(option,"-e") == 0 || strcmp(option,"executar") == 0) {
+                
                 executar(buf);
             }
             else if(strcmp(option,"-l") == 0 || strcmp(option,"listar") == 0) {
@@ -101,11 +106,23 @@ int main(int argc, char const *argv[]) {
                 printf("o option with: %s",buf);
             }
             for(int j = 0; j < 100; j++) buf[j] = '\0';
-        }
+            
+        } 
+        //sleep(5);
+        //printf("dfghjklç");
+        
+        //printf("meio");
+        //write(0,,sizeof(nTarefasExec[0]));
+        
+        //write(0,Exec[0],sizeof(pidsExec[0]));
+        //printf("çlkijuhyfghjkç");
+        
     }
     if(fdfifo < 0) {
         perror("Negative fd");
     }
+
+   
     close(fdfifo);
     close(fdfile);
     return 0;
