@@ -6,6 +6,7 @@ int exec;
 int tempomaxexec;
 int maxPipeTime;
 
+
 void alrm_hand(int signum) {
     for(int x = 0; x < nPids; x++) {
         kill(pid[x],SIGALRM);
@@ -21,7 +22,7 @@ void int_handler(int signum) {
 }
 
 int main(int argc, char const *argv[]) {
-    int fdfifo, fdfile,tarefasTerminadas;
+    int fdfifo,fdfile,tarefasTerminadas;
     char * buf, *option;
     if((fdfile = open("../SO/logs.txt",O_WRONLY | O_TRUNC | O_CREAT)) < 0) {
         perror("File not found");
@@ -29,7 +30,7 @@ int main(int argc, char const *argv[]) {
     }
     tempomaxexec = -1;
     exec = 1;
-    if((tarefasTerminadas = open("../SO/tarefasTerminadas.txt",O_WRONLY | O_TRUNC | O_CREAT)) < 0) {
+    if((tarefasTerminadas = open("../SO/TarefasTerminadas.txt",O_RDWR | O_TRUNC | O_CREAT | O_APPEND)) < 0) {
         perror("File not found");
         exit(1);
     }
