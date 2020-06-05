@@ -13,6 +13,7 @@ int tam;
 int fd_pipePro[2];
 int nTarefa;
 
+
 void alrm_hand(int signum) {
     for(int x = nPids-1; x >= 0; x--) {
         kill(pid[x],SIGALRM);
@@ -45,7 +46,7 @@ int main(int argc, char const *argv[]) {
     tempomaxexec = -1;
     maxPipeTime = -1;
     exec = 1;
-    if((tarefasTerminadas = open("../SO/tarefasTerminadas.txt",O_WRONLY | O_TRUNC | O_CREAT)) < 0) {
+    if((tarefasTerminadas = open("../SO/TarefasTerminadas.txt",O_RDWR | O_TRUNC | O_CREAT | O_APPEND)) < 0) {
         perror("File not found");
         exit(1);
     }

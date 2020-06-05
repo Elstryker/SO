@@ -16,10 +16,11 @@ extern int nTarefa;
 void histTerm(){
     int tarefas;
     char buf[100];
+    int server = open("../SO/wr",O_WRONLY);
     while((tarefas = open("../SO/TarefasTerminadas.txt",O_RDONLY)) > 0) {
         int readBytes = 0;
         while((readBytes = read(tarefas,buf,100)) > 0) {
-            write(1,buf,readBytes);
+            write(server,buf,readBytes);
         }
         close(readBytes);
         close(tarefas);
