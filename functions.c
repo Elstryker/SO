@@ -5,6 +5,11 @@ extern int* pid;
 extern int nPids;
 extern int tempomaxexec;
 extern int maxPipeTime;
+extern char** nTarefasExec;
+extern int* pidsExec;
+extern int* tarefasExec;
+extern int used;
+extern int tam;
 
 void histTerm(){
     int tarefas;
@@ -29,7 +34,8 @@ char* mySep(char* tok, char *buf, char delim) {
 }
 
 int executar(char * buf) {
-    if(fork() == 0) {
+    int filho = -1;
+    if(filho=fork() == 0) {
         nPids = 0;
         printf("Execute PID %d\n",getpid());
         char**ex, **line;
@@ -155,18 +161,30 @@ int executar(char * buf) {
         }
         _exit(0);
     }
+    if(used==tam){
+        nTarefasExec = realloc(nTarefasExec, 2*tam*sizeof(int));
+        tarefasExec =  realloc(tarefasExec, 2*tam*sizeof(char*));
+        pidsExec = realloc(pidsExec, 2*tam*sizeof(char*));
+        tam *= 2;
+    }
+    nTarefasExec[used] = used;
+    tarefasExec[used] = buf;
+    pidsExec[used] = filho;
+    used++;
     return 0;
 }
 
-int terminarTarefa(int* tarefasExec, int* pidsExec, int used, int tarefasTerminadas, char*command){
+int terminarTarefa(int tarefasTerminadas,char*command){
     int k = 1;
+    int n = atoi(command);
     for(int i=0; i<used; i++){
-        if(tarefasExec[i]==atoi(command)){
+        if(nTarefasExec[i]==n){
             if(pidsExec[i]!=-1){
                 //matar tarefa
                 k = kill(pidsExec[i],SIGINT);
                 //copiar para ficheiro de terminadas
-                write(tarefasTerminadas, command, 10);
+                char** s = {command, tarefasExec[n]};
+                write(tarefasTerminadas, s, strlen(s));
 				pidsExec[i] = -1;
                 break;
             }
@@ -174,3 +192,4 @@ int terminarTarefa(int* tarefasExec, int* pidsExec, int used, int tarefasTermina
  	}
     return k;
 }
+
