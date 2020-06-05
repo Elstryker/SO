@@ -10,15 +10,24 @@ int* pidsExec;
 int* tarefasExec;
 int used;
 int tam;
+int fd_pipePro[2];
 
 void alrm_hand(int signum) {
-    for(int x = 0; x < nPids; x++) {
+    for(int x = nPids-1; x >= 0; x--) {
         kill(pid[x],SIGALRM);
         wait(NULL);
+    }
+    for(int x = nPids-1; x >= 0; x--) {
         printf("Killing PID %d\n", pid[x]);
         if(pid[x] != -1)
             kill(pid[x],SIGKILL);
     }
+}
+
+void sigusr1_handler(int signum) {
+    int pidusr;
+    read(fd_pipePro[0],&pidusr,sizeof(int));
+    //aceder ao array de pids e alterar.
 }
 
 void int_handler(int signum) {
@@ -33,11 +42,13 @@ int main(int argc, char const *argv[]) {
         exit(1);
     }
     tempomaxexec = -1;
+    maxPipeTime = -1;
     exec = 1;
     if((tarefasTerminadas = open("../SO/tarefasTerminadas.txt",O_WRONLY | O_TRUNC | O_CREAT)) < 0) {
         perror("File not found");
         exit(1);
     }
+    pipe(fd_pipePro);
     pid = malloc(10 * sizeof(int));
     nPids = 0;
     tam = 1;
@@ -49,6 +60,7 @@ int main(int argc, char const *argv[]) {
     buf = malloc(100 * sizeof(char));
     signal(SIGALRM,alrm_hand);
     signal(SIGINT,int_handler);
+    signal(SIGUSR1,sigusr1_handler);
     fdfifo = open("../SO/fifo",O_RDONLY);
     wrfifo = open("../SO/wr",O_WRONLY);
     printf("Main PID %d\n",getpid());

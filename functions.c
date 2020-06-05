@@ -10,6 +10,7 @@ extern int* pidsExec;
 extern int* tarefasExec;
 extern int used;
 extern int tam;
+extern int fd_pipePro[2];
 
 void histTerm(){
     int tarefas;
@@ -26,7 +27,7 @@ void histTerm(){
 
 char* mySep(char* tok, char *buf, char delim) {
     int i;
-    for(i = 0; buf[i]!=delim && buf[i] != '\n' && buf[i] != NULL; i++) {
+    for(i = 0; buf[i]!=delim && buf[i] != '\n' && buf[i]; i++) {
         tok[i] = buf[i];
     }
     tok[i] = '\0';
@@ -113,7 +114,6 @@ int executar(char * buf) {
                     _exit(1);
                 }
                 if(maxPipeTime > 0) alarm(maxPipeTime);
-                wait(NULL);
                 close(fd_pipe[0][1]);
                 for(pipenmr = 0; pipenmr < nmrPipes; pipenmr++) {
                     pipe(fd_pipe[pipenmr+1]);
@@ -131,7 +131,6 @@ int executar(char * buf) {
                         _exit(1);
                     }
                     if(maxPipeTime > 0) alarm(maxPipeTime);
-                    wait(NULL);
                     close(fd_pipe[pipenmr][0]);
                     close(fd_pipe[pipenmr+1][1]);
                 }
@@ -147,18 +146,19 @@ int executar(char * buf) {
                     execvp(ex[0],ex);
                     _exit(1);
                 }
-                if(maxPipeTime < 0) alarm(maxPipeTime);
+                if(maxPipeTime > 0) alarm(maxPipeTime);
                 wait(NULL);
                 close(fd_pipe[pipenmr][0]);
+                _exit(0);
             }
             if(tempomaxexec > 0)
                 alarm(tempomaxexec);
         }
         int status;
-        wait(&status);
-        if(WIFSIGNALED(status)) {
-            write(1,"Signaled!\n",20);
-        }
+        int pidusr;
+        pidusr = wait(&status);
+        write(fd_pipePro[1],&pidusr,sizeof(int));
+        kill(getppid(),SIGUSR1);
         _exit(0);
     }
     if(used==tam){
