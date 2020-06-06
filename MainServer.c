@@ -91,39 +91,35 @@ int main(int argc, char const *argv[]) {
             }
             else if(strcmp(option,"-t") == 0 || strcmp(option,"terminar") == 0) {
                 int r = terminarTarefa(tarefasTerminadas,buf);
-                if(r==0)  write(wrfifo, "Tarefa terminada", strlen("Tarefa terminada"));
-                else if (r==-1) write(wrfifo, "Não é possível terminar a tarefa", strlen("Não é possível terminar a tarefa"));
-                else write(wrfifo, "Tarefa não está em execução", strlen("Tarefa não está em execução"));
+                if(r==0)  write(wrfifo, "Tarefa terminada", 17);
+                else if (r==-1) write(wrfifo, "Não é possível terminar a tarefa", 36);
+                else write(wrfifo, "Tarefa não está em execução", 32);
                 printf("t option with: %s",buf);
             }
             else if(strcmp(option,"-r") == 0 || strcmp(option,"historico") == 0) {
                 printf("r option with: %s",buf);
-                histTerm();
+                histTerm(tarefasTerminadas);
             }
             else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
+                write (wrfifo,"tempo-inatividade",18);
+                write (wrfifo,"tempo-execucao",15);
+                write (wrfifo,"executar",9);
+                write (wrfifo,"listar",17);
+                write (wrfifo,"terminar",9);
+                write (wrfifo,"historico",10);
+                write (wrfifo,"ajuda",6);
+                write (wrfifo,"output",7);
                 printf("h option with: %s",buf);
             }
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
                 printf("o option with: %s",buf);
             }
             for(int j = 0; j < 100; j++) buf[j] = '\0';
-            
-        } 
-        //sleep(5);
-        //printf("dfghjklç");
-        
-        //printf("meio");
-        //write(0,,sizeof(nTarefasExec[0]));
-        
-        //write(0,Exec[0],sizeof(pidsExec[0]));
-        //printf("çlkijuhyfghjkç");
-        
+        }       
     }
     if(fdfifo < 0) {
         perror("Negative fd");
     }
-
-   
     close(fdfifo);
     close(fdfile);
     return 0;

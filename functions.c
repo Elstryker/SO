@@ -13,17 +13,17 @@ extern int tam;
 extern int fd_pipePro[2];
 extern int nTarefa;
 
-void histTerm(){
+void histTerm(int tarefasTerminadas){
     int tarefas;
     char buf[100];
     int server = open("../SO/wr",O_WRONLY);
-    while((tarefas = open("../SO/TarefasTerminadas.txt",O_RDONLY)) > 0) {
+    while(tarefasTerminadas > 0) {
         int readBytes = 0;
-        while((readBytes = read(tarefas,buf,100)) > 0) {
+        while((readBytes = read(tarefasTerminadas,buf,100)) > 0) {
             write(server,buf,readBytes);
         }
         close(readBytes);
-        close(tarefas);
+        close(tarefasTerminadas);
     }   
 }
 
@@ -207,7 +207,7 @@ int terminarTarefa(int tarefasTerminadas,char*command){
                 k = kill(pidsExec[i],SIGINT);
                 //copiar para ficheiro de terminadas
                 char* s =  malloc(100*sizeof(char*));
-                sprintf(s, "#%i, Interrompida: %s \n", n, tarefasExec[i]); //TAREFAS EXEC N ESTA MAL 
+                sprintf(s, "#%i, Interrompida: %s \n", n, tarefasExec[i]); 
                 write(tarefasTerminadas, s, strlen(s));
 				pidsExec[i] = -1;
                 break;
