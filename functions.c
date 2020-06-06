@@ -213,7 +213,7 @@ void adicionarTarefa(int filho, char* buf){
 int terminarTarefa(char*command){
     int k = 1;
     int tarefasTerminadas;
-    if((tarefasTerminadas = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND)) < 0) {
+    if((tarefasTerminadas = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND,0666)) < 0) {
         perror("File not found");
         exit(1);
     }

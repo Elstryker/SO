@@ -14,6 +14,8 @@ int used;
 int tam;
 int fd_pipePro[2];
 int nTarefa;
+int statusID;
+int actualStatus;
 
 
 int wrtToFIFO(char const *nameFifo,char *argv[],int argc){

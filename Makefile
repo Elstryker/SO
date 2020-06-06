@@ -1,17 +1,18 @@
 CC= gcc
 
-CFLAGS= -I include -Wall -O3 
+CFLAGS= -I -Wall -O3 
 
 all: MainCliente MainServer
-	mkfifo fifo
-	mkfifo wr
+		mkfifo fifo
+		mkfifo wr
+	 
 
 
-MainCliente:
-		gcc MainCliente.c functions.c  -o MainCliente
+MainCliente: 
+		gcc MainCliente.c functions.c  $(CFLAGS) -o MainCliente
 
 MainServer: 
-		gcc MainServer.c functions.c -o MainServer
+		gcc MainServer.c functions.c $(CFLAGS) -o MainServer
 		
 
 

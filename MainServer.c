@@ -30,7 +30,7 @@ void alrm_hand(int signum) {
 
 void sigusr1_handler(int signum) {
     int pidusr, status, x, fd, numTarefa;
-    char* buf, command;
+    char* buf, *command;
     buf = malloc(200 * sizeof(char));
     read(fd_pipePro[0],&pidusr,sizeof(int));
     pidusr = wait(&status);
@@ -44,7 +44,7 @@ void sigusr1_handler(int signum) {
             nTarefasExec[x] = -1;
         }
     }
-    if((fd = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND)) < 0) {
+    if((fd = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND,0666)) < 0) {
         perror("File not found");
     }
     else {
@@ -70,7 +70,7 @@ void int_handler(int signum) {
 int main(int argc, char const *argv[]) {
     int fdfifo, fdfile, wrfifo;
     char * buf, *option;
-    if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT)) < 0) {
+    if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT,0666)) < 0) {
         perror("File not found");
         exit(1);
     }
@@ -85,10 +85,12 @@ int main(int argc, char const *argv[]) {
     used=0;
     tarefasExec = malloc(sizeof(char*));
     nTarefasExec = malloc(sizeof(int));
+    
     for(int d = 0; d < tam; d++) {
         nTarefasExec[d] = -1;
         pidsExec[d] = -1;
     } 
+    
     pidsExec = malloc(sizeof(int));
     option = malloc(5 * sizeof(char));
     buf = malloc(100 * sizeof(char));
