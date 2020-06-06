@@ -14,6 +14,8 @@ int used;
 int tam;
 int fd_pipePro[2];
 int nTarefa;
+int statusID;
+int actualStatus;
 
 
 int wrtToFIFO(char const *nameFifo,char *argv[],int argc){
@@ -47,7 +49,7 @@ int wrtToFIFO(char const *nameFifo,char *argv[],int argc){
     else{
         if(argc>1){
             if((pid=fork())==0){
-                if(strcmp(argv[1],"-m") != 0 && strcmp(argv[1],"-e") != 0  && strcmp(argv[1],"-l") != 0 && strcmp(argv[1],"-e") != 0 &&
+                if( strcmp(argv[1],"-i") != 0 && strcmp(argv[1],"-m") != 0 && strcmp(argv[1],"-e") != 0  && strcmp(argv[1],"-l") != 0 && strcmp(argv[1],"-e") != 0 &&
                     strcmp(argv[1],"-l") != 0 && strcmp(argv[1],"-r") != 0 && strcmp(argv[1],"-t") != 0 && strcmp(argv[1],"-h") != 0){
                     write(0,"comando inválido",18);
                     }
