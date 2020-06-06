@@ -5,9 +5,9 @@ int nPids;
 int exec;
 int tempomaxexec;
 int maxPipeTime;
-char** nTarefasExec;
+char** tarefasExec;
 int* pidsExec;
-int* tarefasExec;
+int* nTarefasExec;
 int used;
 int tam;
 int fd_pipePro[2];
@@ -93,9 +93,6 @@ int main(int argc, char const *argv[]) {
             else if(strcmp(option,"-r") == 0 || strcmp(option,"historico") == 0) {
                 printf("r option with: %s",buf);
                 histTerm();
-            }
-            else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
-                printf("h option with: %s",buf);
             }
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
                 printf("o option with: %s",buf);

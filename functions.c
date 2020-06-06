@@ -5,9 +5,9 @@ extern int* pid;
 extern int nPids;
 extern int tempomaxexec;
 extern int maxPipeTime;
-extern char** nTarefasExec;
+extern char** tarefasExec;
 extern int* pidsExec;
-extern int* tarefasExec;
+extern int* nTarefasExec;
 extern int used;
 extern int tam;
 extern int fd_pipePro[2];
@@ -181,7 +181,7 @@ int terminarTarefa(int tarefasTerminadas,char*command){
         if(nTarefasExec[i]==n){
             if(pidsExec[i]!=-1){
                 //matar tarefa
-                k = kill(pidsExec[i],SIGINT);
+                k = kill(pidsExec[i],SIGKILL);
                 //copiar para ficheiro de terminadas
                 char** s = {command, tarefasExec[n]};
                 write(tarefasTerminadas, s, strlen(s));
