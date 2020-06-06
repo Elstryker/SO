@@ -2,27 +2,17 @@ CC= gcc
 
 CFLAGS= -I include -Wall -O3 
 
-allprog: MainCliente MainServer
-
-functions.o: functions.c functions.h
-			$(CC) -c functions.c
-
-MainCliente.o: MainCliente.c
-				$(CC) -c MainCliente.c
-
-MainServer.o: MainServer.c  
-				$(CC) -c MainServer.c
-
-MainCliente: MainCliente.o
-		$(CC) $(CFLAGS) MainCliente.o -o MainCliente
-
-MainServer: MainServer.o functions.o
-		$(CC) $(CFLAGS) -o MainServer.o -o MainServer
-		
-all:
+all: MainCliente MainServer
 	mkfifo fifo
-	mkfifo wr 
-	make allprog
+	mkfifo wr
+
+
+MainCliente:
+		gcc MainCliente.c functions.c  -o MainCliente
+
+MainServer: 
+		gcc MainServer.c functions.c -o MainServer
+		
 
 
 clean:
