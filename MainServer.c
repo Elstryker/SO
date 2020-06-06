@@ -32,9 +32,8 @@ void sigusr1_handler(int signum) {
     int pidusr, status, x, fd, numTarefa;
     char* buf, *command;
     buf = malloc(200 * sizeof(char));
-    read(fd_pipePro[0],&pidusr,sizeof(int));
-    pidusr = wait(&status);
-    status = WEXITSTATUS(status);
+    read(fd_pipePro[0],&status,sizeof(int));
+    pidusr = wait(NULL);
     for(x = 0; x < used; x++) {
         if(pidsExec[x] == pidusr) {
             pidsExec[x] = -1;

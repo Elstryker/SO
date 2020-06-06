@@ -171,8 +171,10 @@ int executar(char * buf) {
         }
         int status;
         wait(&status);
-        write(fd_pipePro[1],&status,sizeof(int));
         status = WEXITSTATUS(status);
+        if(status == 2) status = 2;
+        if(status == 0 && actualStatus != 0) status = 1;
+        write(fd_pipePro[1],&status,sizeof(int));
         actualStatus = status;
         kill(getppid(),SIGUSR1);
         _exit(actualStatus);
