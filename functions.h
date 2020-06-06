@@ -12,8 +12,8 @@
 
 char* mySep(char* tok, char* buf, char delim);
 int executar(char* buf);
-void histTerm(int tarefasTerminadas);
-int terminarTarefa(int tarefasTerminadas, char*command);
+void histTerm();
+int terminarTarefa(char*command);
 void adicionarTarefa(int filho, char* buf);
 
 #endif

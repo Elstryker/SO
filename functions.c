@@ -1,20 +1,28 @@
 
 #include "functions.h"
 
-extern int* pid;
-extern int nPids;
-extern int tempomaxexec;
-extern int maxPipeTime;
-extern char** tarefasExec;
-extern int* pidsExec;
-extern int* nTarefasExec;
-extern int used;
-extern int tam;
-extern int fd_pipePro[2];
-extern int nTarefa;
+extern int* pid; // Pids dos processos filho
+extern int nPids; // Numero de pids em pid
+extern int exec; // Flag de execução do servidor
+extern int tempomaxexec; // Variável de controlo do tempo máximo de execução
+extern int maxPipeTime; // Variável de controlo do tempo máximo de inatividade de pipes
+extern char** tarefasExec; // Guarda comando da tarefa
+extern int* pidsExec; // Array de pids em execução
+extern int* nTarefasExec; // Array que guarda o numero das tarefas
+extern int used; // Numero de pids no array
+extern int tam; // Tamanho do array
+extern int fd_pipePro[2]; // Pipe entre processo principal e cada processo filho
+extern int nTarefa; // Número da próxima tarefa
+extern int statusID; // Identificador de tipo erro
+extern int actualStatus; // Estado atual do processo 
 
-void histTerm(int tarefasTerminadas){
-    int tarefas;
+
+void histTerm(){
+    int tarefas, tarefasTerminadas;
+    if((tarefasTerminadas = open("../SO/TarefasTerminadas.txt",O_RDONLY)) < 0) {
+        perror("File not found");
+        exit(1);
+    }
     char buf[100];
     int server = open("../SO/wr",O_WRONLY);
     while(tarefasTerminadas > 0) {
@@ -39,6 +47,7 @@ char* mySep(char* tok, char *buf, char delim) {
 int executar(char * buf) {
     int filho = -1;
     if((filho=fork()) == 0) {
+        statusID = 1;
         nPids = 0;
         printf("Execute PID %d\n",getpid());
         char**ex, **line;
@@ -71,6 +80,8 @@ int executar(char * buf) {
         // Executar comando com apenas 1 fd_pipe[0]
         else if(nmrPipes == 0) {
             if((pid[nPids++] = fork()) == 0) {
+                actualStatus = 0;
+                statusID = 2;
                 pid = malloc(10 * sizeof(int));
                 nPids = 0;
                 printf("PID child: %d\n",getpid());
@@ -97,7 +108,7 @@ int executar(char * buf) {
                 }
                 wait(NULL);
                 close(fd_pipe[0][0]);
-                _exit(0);
+                _exit(actualStatus);
             }
             if(tempomaxexec > 0)
                 alarm(tempomaxexec);
@@ -105,6 +116,8 @@ int executar(char * buf) {
         // Caso haja 2 ou mais pipes
         else if(nmrPipes > 0) {
             if((pid[nPids++] = fork()) == 0) {
+                actualStatus = 0;
+                statusID = 2;
                 pid = malloc(10 * sizeof(int));
                 nPids = 0;
                 printf("PID child: %d\n",getpid());
@@ -151,19 +164,19 @@ int executar(char * buf) {
                 if(maxPipeTime > 0) alarm(maxPipeTime);
                 wait(NULL);
                 close(fd_pipe[pipenmr][0]);
-                _exit(0);
+                _exit(actualStatus);
             }
             if(tempomaxexec > 0)
                 alarm(tempomaxexec);
         }
         int status;
-        int pidusr;
-        pidusr = wait(&status);
-        write(fd_pipePro[1],&pidusr,sizeof(int));
+        wait(&status);
+        write(fd_pipePro[1],&status,sizeof(int));
+        status = WEXITSTATUS(status);
+        actualStatus = status;
         kill(getppid(),SIGUSR1);
-        _exit(0);
+        _exit(actualStatus);
     }
-    
     adicionarTarefa(filho, buf);    
     return 0;
 }
@@ -197,8 +210,13 @@ void adicionarTarefa(int filho, char* buf){
     }
 }
 
-int terminarTarefa(int tarefasTerminadas,char*command){
+int terminarTarefa(char*command){
     int k = 1;
+    int tarefasTerminadas;
+    if((tarefasTerminadas = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND)) < 0) {
+        perror("File not found");
+        exit(1);
+    }
     int n = atoi(command);
     for(int i=0; i<used; i++){
         if(nTarefasExec[i]==n){
