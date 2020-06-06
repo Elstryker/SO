@@ -80,7 +80,6 @@ int main(int argc, char const *argv[]) {
                 tempomaxexec = atoi(buf);
             }
             else if(strcmp(option,"-e") == 0 || strcmp(option,"executar") == 0) {
-                
                 executar(buf);
             }
             else if(strcmp(option,"-l") == 0 || strcmp(option,"listar") == 0) {
@@ -97,8 +96,8 @@ int main(int argc, char const *argv[]) {
                 printf("t option with: %s",buf);
             }
             else if(strcmp(option,"-r") == 0 || strcmp(option,"historico") == 0) {
-                printf("r option with: %s",buf);
-                histTerm(tarefasTerminadas);
+                //printf("r option with: %s",buf);
+                histTerm();
             }
             else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
                 write (wrfifo,"tempo-inatividade",18);
