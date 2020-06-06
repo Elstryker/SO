@@ -85,11 +85,11 @@ int main(int argc, char const *argv[]) {
     used=0;
     tarefasExec = malloc(sizeof(char*));
     nTarefasExec = malloc(sizeof(int));
+    pidsExec = malloc(sizeof(int));
     for(int d = 0; d < tam; d++) {
         nTarefasExec[d] = -1;
         pidsExec[d] = -1;
     } 
-    pidsExec = malloc(sizeof(int));
     option = malloc(5 * sizeof(char));
     buf = malloc(100 * sizeof(char));
     signal(SIGALRM,alrm_hand);
