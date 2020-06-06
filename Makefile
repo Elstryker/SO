@@ -26,4 +26,4 @@ all:
 
 
 clean:
-	rm -f *.o MainCliente MainServer fifo
+	rm -f *.o MainCliente MainServer fifo wr
