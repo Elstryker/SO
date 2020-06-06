@@ -1,10 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <string.h>
 #include "functions.h"
 
 int* pid;
@@ -30,6 +25,7 @@ int wrtToFIFO(char const *nameFifo,char *argv[],int argc){
     char *buffer = malloc(100 * sizeof(char));
     char *option = malloc(5 * sizeof(char));
     int bytesRead = 0;
+    int pid;
         if(argc<=1){
             if(fork()==0){
             while((bytesRead = read(0,buffer,100)) >0){
@@ -50,25 +46,22 @@ int wrtToFIFO(char const *nameFifo,char *argv[],int argc){
 
     else{
         if(argc>1){
-            int pid;
             if((pid=fork())==0){
                 if(strcmp(argv[1],"-m") != 0 && strcmp(argv[1],"-e") != 0  && strcmp(argv[1],"-l") != 0 && strcmp(argv[1],"-e") != 0 &&
                     strcmp(argv[1],"-l") != 0 && strcmp(argv[1],"-r") != 0 && strcmp(argv[1],"-t") != 0 && strcmp(argv[1],"-h") != 0){
                     write(0,"comando inválido",18);
                     }
                 else {
-                    int total=0,i=0;
-                    for(int i=1;i<argc;i++){
-                        total+= *(argv[i]);
-                    }
                     char *args=malloc(100*sizeof(char));
                     sprintf(args,"%s %s",argv[1],argv[2]);
-                    if( write(fd,args,strlen(args)) < 0 ) {
+                    int v = write(fd,args,strlen(args));
+                    if( v < 0 ) {
                         perror("write");
                         exit(1);
                     }
                 }
             }
+            
         }
     }
     close(fd);
@@ -84,12 +77,15 @@ int rdFromFIFO(const char *myserver,int pid,int argc){
     int bytesRead=0;
     char *buffer = malloc(100 * sizeof(char));
     while((bytesRead = read(fd,buffer,100)) > 0){
-        if(write(0,buffer,strlen(buffer)) < 0){
+        int v = write(0,buffer,strlen(buffer));
+        if(v < 0){
             perror("write");
             exit(1);
         }
-    if(argc>1) kill(pid,SIGINT);
+        close(fd);
+        if(argc>1) kill(pid,SIGINT);
     }
+   
     
 return 0;
 }
@@ -99,7 +95,6 @@ int main(int argc,char*argv[]) {
     const char *myserver = "../SO/wr";
     int pid = wrtToFIFO(myfifo,argv,argc);
     rdFromFIFO(myserver,pid,argc);
-
     return 0;
 }
 

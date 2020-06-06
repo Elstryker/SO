@@ -109,7 +109,6 @@ int main(int argc, char const *argv[]) {
                 tempomaxexec = atoi(buf);
             }
             else if(strcmp(option,"-e") == 0 || strcmp(option,"executar") == 0) {
-                
                 executar(buf);
             }
             else if(strcmp(option,"-l") == 0 || strcmp(option,"listar") == 0) {
@@ -119,14 +118,13 @@ int main(int argc, char const *argv[]) {
                 printf("l option with: %s",buf);
             }
             else if(strcmp(option,"-t") == 0 || strcmp(option,"terminar") == 0) {
-                int r = terminarTarefa(tarefasTerminadas,buf);
+                int r = terminarTarefa(buf);
                 if(r==0)  write(wrfifo, "Tarefa terminada", 17);
                 else if (r==-1) write(wrfifo, "Não é possível terminar a tarefa", 36);
                 else write(wrfifo, "Tarefa não está em execução", 32);
                 printf("t option with: %s",buf);
             }
             else if(strcmp(option,"-r") == 0 || strcmp(option,"historico") == 0) {
-                printf("r option with: %s",buf);
                 histTerm();
             }
             else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
