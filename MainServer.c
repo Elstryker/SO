@@ -44,20 +44,20 @@ void sigusr1_handler(int signum) {
             nTarefasExec[x] = -1;
         }
     }
-    if((fd = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND,0666)) < 0) {
+    if((fd = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND)) < 0) {
         perror("File not found");
     }
     else {
         if(status == 0) {
-            sprintf(buf,"#%d, concluida: %s\n",numTarefa,command);
+            sprintf(buf,"#%d, concluida: %s",numTarefa,command);
             write(fd,buf,strlen(buf));
         }
         else if(status == 1) {
-            sprintf(buf,"#%d, max execucao: %s\n",numTarefa,command);
+            sprintf(buf,"#%d, max execucao: %s",numTarefa,command);
             write(fd,buf,strlen(buf));
         }
         else if(status == 2) {
-            sprintf(buf,"#%d, max inatividade: %s\n",numTarefa,command);
+            sprintf(buf,"#%d, max inatividade: %s",numTarefa,command);
             write(fd,buf,strlen(buf));
         }
     }
@@ -70,7 +70,7 @@ void int_handler(int signum) {
 int main(int argc, char const *argv[]) {
     int fdfifo, fdfile, wrfifo;
     char * buf, *option;
-    if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT,0666)) < 0) {
+    if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT)) < 0) {
         perror("File not found");
         exit(1);
     }
