@@ -77,8 +77,8 @@ int rdFromFIFO(const char *myserver,int pid,int argc){
         exit(1);
     }
     int bytesRead=0;
-    char *buffer = malloc(100 * sizeof(char));
-    while((bytesRead = read(fd,buffer,100)) > 0){
+    char *buffer = malloc(155 * sizeof(char));
+    while((bytesRead = read(fd,buffer,155)) > 0){
         int v = write(0,buffer,strlen(buffer));
         if(v < 0){
             perror("write");

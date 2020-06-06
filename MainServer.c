@@ -128,14 +128,8 @@ int main(int argc, char const *argv[]) {
                 histTerm();
             }
             else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
-                write (wrfifo,"tempo-inatividade",18);
-                write (wrfifo,"tempo-execucao",15);
-                write (wrfifo,"executar",9);
-                write (wrfifo,"listar",17);
-                write (wrfifo,"terminar",9);
-                write (wrfifo,"historico",10);
-                write (wrfifo,"ajuda",6);
-                write (wrfifo,"output",7);
+
+                write(wrfifo,"tempo-inatividade segs \n tempo-execucao segs \n executar p1 | p2 ... | pn \n listar \n terminar n \n historico \n ajuda \n output n \n",128);
                 printf("h option with: %s",buf);
             }
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
