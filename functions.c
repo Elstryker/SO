@@ -204,7 +204,7 @@ int terminarTarefa(int tarefasTerminadas,char*command){
         if(nTarefasExec[i]==n){
             if(pidsExec[i]!=-1){
                 //matar tarefa
-                k = kill(pidsExec[i],SIGINT);
+                k = kill(pidsExec[i],SIGKILL);
                 //copiar para ficheiro de terminadas
                 char* s =  malloc(100*sizeof(char*));
                 sprintf(s, "#%i, Interrompida: %s \n", n, tarefasExec[i]); //TAREFAS EXEC N ESTA MAL 

@@ -100,9 +100,6 @@ int main(int argc, char const *argv[]) {
                 printf("r option with: %s",buf);
                 histTerm();
             }
-            else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
-                printf("h option with: %s",buf);
-            }
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
                 printf("o option with: %s",buf);
             }
