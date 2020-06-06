@@ -1,25 +1,27 @@
 #include "functions.h"
 
-int* pid;
-int nPids;
-int exec;
-int tempomaxexec;
-int maxPipeTime;
-char** tarefasExec;
-int* pidsExec;
-int* nTarefasExec;
-int used;
-int tam;
-int fd_pipePro[2];
-int nTarefa;
-
+int* pid; // Pids dos processos filho
+int nPids; // Numero de pids em pid
+int exec; // Flag de execução do servidor
+int tempomaxexec; // Variável de controlo do tempo máximo de execução
+int maxPipeTime; // Variável de controlo do tempo máximo de inatividade de pipes
+char** tarefasExec; // Guarda comando da tarefa
+int* pidsExec; // Array de pids em execução
+int* nTarefasExec; // Array que guarda o numero das tarefas
+int used; // Numero de pids no array
+int tam; // Tamanho do array
+int fd_pipePro[2]; // Pipe entre processo principal e cada processo filho
+int nTarefa; // Número da próxima tarefa
+int statusID; // Identificador de tipo estado
+int actualStatus; // Estado atual do processo 
 
 void alrm_hand(int signum) {
-    for(int x = nPids-1; x >= 0; x--) {
+    actualStatus = statusID;
+    for(int x = 0; x < nPids; x++) {
         kill(pid[x],SIGALRM);
         wait(NULL);
     }
-    for(int x = nPids-1; x >= 0; x--) {
+    for(int x = 0; x < nPids; x++) {
         printf("Killing PID %d\n", pid[x]);
         if(pid[x] != -1)
             kill(pid[x],SIGKILL);
@@ -27,9 +29,38 @@ void alrm_hand(int signum) {
 }
 
 void sigusr1_handler(int signum) {
-    int pidusr;
+    int pidusr, status, x, fd, numTarefa;
+    char* buf, command;
+    buf = malloc(200 * sizeof(char));
     read(fd_pipePro[0],&pidusr,sizeof(int));
-    //aceder ao array de pids e alterar.
+    pidusr = wait(&status);
+    status = WEXITSTATUS(status);
+    for(x = 0; x < used; x++) {
+        if(pidsExec[x] == pidusr) {
+            pidsExec[x] = -1;
+            command = strdup(tarefasExec[x]);
+            free(tarefasExec[x]);
+            numTarefa = nTarefasExec[x];
+            nTarefasExec[x] = -1;
+        }
+    }
+    if((fd = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND)) < 0) {
+        perror("File not found");
+    }
+    else {
+        if(status == 0) {
+            sprintf(buf,"#%d, concluida: %s\n",numTarefa,command);
+            write(fd,buf,strlen(buf));
+        }
+        else if(status == 1) {
+            sprintf(buf,"#%d, max execucao: %s\n",numTarefa,command);
+            write(fd,buf,strlen(buf));
+        }
+        else if(status == 2) {
+            sprintf(buf,"#%d, max inatividade: %s\n",numTarefa,command);
+            write(fd,buf,strlen(buf));
+        }
+    }
 }
 
 void int_handler(int signum) {
@@ -37,30 +68,28 @@ void int_handler(int signum) {
 }
 
 int main(int argc, char const *argv[]) {
-    int fdfifo, fdfile,tarefasTerminadas, wrfifo;
+    int fdfifo, fdfile, wrfifo;
     char * buf, *option;
-    if((fdfile = open("../SO/logs.txt",O_WRONLY | O_TRUNC | O_CREAT)) < 0) {
-        perror("File not found");
-        exit(1);
-    }
-    tempomaxexec = -1;
-    maxPipeTime = -1;
-    exec = 1;
-    if((tarefasTerminadas = open("../SO/TarefasTerminadas.txt",O_RDWR | O_TRUNC | O_CREAT | O_APPEND)) < 0) {
+    if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT)) < 0) {
         perror("File not found");
         exit(1);
     }
     pipe(fd_pipePro);
+    tempomaxexec = -1;
+    maxPipeTime = -1;
+    exec = 1;
     pid = malloc(10 * sizeof(int));
     nPids = 0;
-    nTarefa=0;
+    nTarefa = 0;
     tam = 1;
     used=0;
     tarefasExec = malloc(sizeof(char*));
     nTarefasExec = malloc(sizeof(int));
-    nTarefasExec[0] = -2;
+    for(int d = 0; d < tam; d++) {
+        nTarefasExec[d] = -1;
+        pidsExec[d] = -1;
+    } 
     pidsExec = malloc(sizeof(int));
-    pidsExec[0] = 0;
     option = malloc(5 * sizeof(char));
     buf = malloc(100 * sizeof(char));
     signal(SIGALRM,alrm_hand);
@@ -89,14 +118,13 @@ int main(int argc, char const *argv[]) {
                 printf("l option with: %s",buf);
             }
             else if(strcmp(option,"-t") == 0 || strcmp(option,"terminar") == 0) {
-                int r = terminarTarefa(tarefasTerminadas,buf);
+                int r = terminarTarefa(buf);
                 if(r==0)  write(wrfifo, "Tarefa terminada", 17);
                 else if (r==-1) write(wrfifo, "Não é possível terminar a tarefa", 36);
                 else write(wrfifo, "Tarefa não está em execução", 32);
                 printf("t option with: %s",buf);
             }
             else if(strcmp(option,"-r") == 0 || strcmp(option,"historico") == 0) {
-                //printf("r option with: %s",buf);
                 histTerm();
             }
             else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
