@@ -13,17 +13,17 @@ extern int tam;
 extern int fd_pipePro[2];
 extern int nTarefa;
 
-void histTerm(int tarefasTerminadas){
+void histTerm(){
     int tarefas;
     char buf[100];
     int server = open("../SO/wr",O_WRONLY);
-    while(tarefasTerminadas > 0) {
-        int readBytes = 0;
-        while((readBytes = read(tarefasTerminadas,buf,100)) > 0) {
+    while((tarefas = open("../SO/TarefasTerminadas.txt",O_RDONLY)) > 0){
+       int readBytes = 0;
+        while((readBytes = read(tarefas,buf,100)) > 0) {
             write(server,buf,readBytes);
         }
         close(readBytes);
-        close(tarefasTerminadas);
+        close(tarefas);
     }   
 }
 

@@ -80,7 +80,6 @@ int main(int argc, char const *argv[]) {
                 tempomaxexec = atoi(buf);
             }
             else if(strcmp(option,"-e") == 0 || strcmp(option,"executar") == 0) {
-                
                 executar(buf);
             }
             else if(strcmp(option,"-l") == 0 || strcmp(option,"listar") == 0) {
@@ -98,29 +97,12 @@ int main(int argc, char const *argv[]) {
                 printf("t option with: %s",buf);
             }
             else if(strcmp(option,"-r") == 0 || strcmp(option,"historico") == 0) {
-                printf("r option with: %s",buf);
-                histTerm(tarefasTerminadas);
+                //printf("r option with: %s",buf);
+                histTerm();
             }
             else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
 
-                write(wrfifo,"tempo-inatividade segs \n tempo-execucao segs \n executar p1 | p2 ... | pn \n listar \n terminar n \n historico \n ajuda \n output n",126);
-
-                write (wrfifo,"tempo-inatividade segs",23);
-                //sleep(3);
-                write (wrfifo,"tempo-execucao segs",20);
-                //sleep(3);
-                write (wrfifo,"executar p1 | p2 ... | pn",26);
-                //sleep(3);
-                write (wrfifo,"listar",17);
-                //sleep(3);
-                write (wrfifo,"terminar n",11);
-                //sleep(3);
-                write (wrfifo,"historico",10);
-                //sleep(3);
-                write (wrfifo,"ajuda",6);
-                //sleep(3);
-                write (wrfifo,"output n",9);
-                //sleep(3);
+                write(wrfifo,"tempo-inatividade segs \n tempo-execucao segs \n executar p1 | p2 ... | pn \n listar \n terminar n \n historico \n ajuda \n output n \n",128);
                 printf("h option with: %s",buf);
             }
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
