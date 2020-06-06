@@ -91,6 +91,7 @@ int main(int argc, char const *argv[]) {
             }
             else if(strcmp(option,"-t") == 0 || strcmp(option,"terminar") == 0) {
                 int r = terminarTarefa(tarefasTerminadas,buf);
+                printf("%d", r);
                 if(r==0)  write(wrfifo, "Tarefa terminada", 17);
                 else if (r==-1) write(wrfifo, "Não é possível terminar a tarefa", 36);
                 else write(wrfifo, "Tarefa não está em execução", 32);
@@ -101,14 +102,25 @@ int main(int argc, char const *argv[]) {
                 histTerm(tarefasTerminadas);
             }
             else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
-                write (wrfifo,"tempo-inatividade",18);
-                write (wrfifo,"tempo-execucao",15);
-                write (wrfifo,"executar",9);
+
+                write(wrfifo,"tempo-inatividade segs \n tempo-execucao segs \n executar p1 | p2 ... | pn \n listar \n terminar n \n historico \n ajuda \n output n",126);
+
+                write (wrfifo,"tempo-inatividade segs",23);
+                //sleep(3);
+                write (wrfifo,"tempo-execucao segs",20);
+                //sleep(3);
+                write (wrfifo,"executar p1 | p2 ... | pn",26);
+                //sleep(3);
                 write (wrfifo,"listar",17);
-                write (wrfifo,"terminar",9);
+                //sleep(3);
+                write (wrfifo,"terminar n",11);
+                //sleep(3);
                 write (wrfifo,"historico",10);
+                //sleep(3);
                 write (wrfifo,"ajuda",6);
-                write (wrfifo,"output",7);
+                //sleep(3);
+                write (wrfifo,"output n",9);
+                //sleep(3);
                 printf("h option with: %s",buf);
             }
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
