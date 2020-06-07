@@ -74,8 +74,8 @@ int executar(char * buf) {
     char* inicial;
     char* tar;
     if((filho=fork()) == 0) {
-        logs = open("logs.txt",O_WRONLY | O_APPEND);
-        idx = open("log.idx",O_WRONLY | O_APPEND);
+        logs = open("logs.txt",O_WRONLY | O_APPEND | O_CREAT);
+        idx = open("log.idx",O_WRONLY | O_APPEND | O_CREAT);
         printf("TAREFA %i \n", nTarefa);
         int nTarefaN= count(nTarefa)+1;
         tar = malloc(nTarefaN*sizeof(char));
@@ -216,14 +216,6 @@ int executar(char * buf) {
         int status;
         wait(&status);
 
-        
-        status = WEXITSTATUS(status);
-        if(status == 2) status = 2;
-        if(status == 0 && actualStatus != 0) status = 1;
-        write(fd_pipePro[1],&status,sizeof(int));
-        actualStatus = status;
-        kill(getppid(),SIGUSR1);
-
         int indFinal = lseek(logs,0,SEEK_END);
         int indFinalN= count(indFinal)+2;
         //printf("INDICE FINAL %d \n", indFinal);
@@ -232,6 +224,15 @@ int executar(char * buf) {
         write(idx,final,indFinalN);
         close(idx);
         close(logs);
+        
+        status = WEXITSTATUS(status);
+        if(status == 2) status = 2;
+        if(status == 0 && actualStatus != 0) status = 1;
+        write(fd_pipePro[1],&status,sizeof(int));
+        actualStatus = status;
+        kill(getppid(),SIGUSR1);
+
+        
 
         _exit(actualStatus);
     }
