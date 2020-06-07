@@ -125,9 +125,7 @@ int main(int argc, char const *argv[]) {
                 write(wrfifo,"Novo tempo máximo de execucao\n",32);
             }
             else if(strcmp(option,"-e") == 0 || strcmp(option,"executar") == 0) {
-                write(1,"Antes\n",7);
                 executar(buf);
-                write(1,"Depois\n",8);
                 write(wrfifo,"Nova tarefa\n",13);
             }
             else if(strcmp(option,"-l") == 0 || strcmp(option,"listar") == 0) {
@@ -144,18 +142,13 @@ int main(int argc, char const *argv[]) {
                 else write(wrfifo, "Tarefa não está em execução", 32);
             }
             else if(strcmp(option,"-r") == 0 || strcmp(option,"historico") == 0) {
-                write(1,"Antes\n",7);
                 histTerm(wrfifo);
-                write(1,"Depois\n",8);
             }
             else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
-                write(1,"Antes\n",7);
                 write(wrfifo,"tempo-inatividade segs \n tempo-execucao segs \n executar p1 | p2 ... | pn \n listar \n terminar n \n historico \n ajuda \n output n \n",128);
-                write(1,"Depois\n",8);
             }
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
                 output(atoi(buf));
-                printf("o option with: %s",buf);
             }
             close(wrfifo);
         }       
@@ -170,7 +163,6 @@ int main(int argc, char const *argv[]) {
     sprintf(tarefaNumero,"%d",nTarefa);
     lseek(fileTarefa, 0, SEEK_SET);
     write(fileTarefa,tarefaNumero,countTarefa);
-
     close(fileTarefa);
     return 0;
 }

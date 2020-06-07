@@ -74,18 +74,16 @@ int executar(char * buf) {
     char* inicial;
     char* tar;
     if((filho=fork()) == 0) {
-        logs = open("logs.txt",O_WRONLY | O_APPEND);
-        idx = open("log.idx",O_WRONLY | O_APPEND);
-        printf("TAREFA %i \n", nTarefa);
+        logs = open("logs.txt",O_WRONLY | O_CREAT | O_APPEND);
+        idx = open("log.idx",O_WRONLY | O_CREAT | O_APPEND);
         int nTarefaN= count(nTarefa)+1;
         tar = malloc(nTarefaN*sizeof(char));
         sprintf(tar,"%d ",nTarefa);
         write(idx,tar,nTarefaN);
         indInicial = lseek(logs,0, SEEK_END);
         int indInicialN= count(indInicial)+1;
-        printf("INDICE INICIAL %i  \n", indInicial);
         char* inicial = malloc(indInicialN*sizeof(char));
-        sprintf(inicial,"%d ",indInicial);
+        sprintf(inicial,"%d\n",indInicial);
         write(idx,inicial,indInicialN);
         statusID = 1;
         nPids = 0;
@@ -133,8 +131,8 @@ int executar(char * buf) {
                     execvp(ex[0],ex);
                     _exit(1);
                 }
-                if(maxPipeTime > 0) alarm(maxPipeTime);
                 close(fd_pipe[0][1]);
+                if(maxPipeTime > 0) alarm(maxPipeTime);
                 // Partir o segundo comando
                 indexEx = 0;
                 ex[indexEx++] = strtok(line[1]," \n");
@@ -142,14 +140,18 @@ int executar(char * buf) {
                 indexEx--;
                 ex[indexEx]=NULL;
                 if((pid[nPids++] = fork()) == 0) {
+                    printf("Ultimo com: %d\n",getpid());
                     dup2(fd_pipe[0][0],0);
                     close(fd_pipe[0][0]);
                     dup2(logs,1);
+                    close(logs);
                     execvp(ex[0],ex);
                     _exit(1);
                 }
-                wait(NULL);
                 close(fd_pipe[0][0]);
+                for(int x = 0; x < nPids; x++) {
+                    waitpid(pid[x],NULL,WNOHANG);
+                }
                 _exit(actualStatus);
             }
             if(tempomaxexec > 0)
@@ -201,42 +203,31 @@ int executar(char * buf) {
                     dup2(fd_pipe[pipenmr][0],0);
                     close(fd_pipe[pipenmr][0]);
                     dup2(logs,1);
+                    close(logs);
                     execvp(ex[0],ex);
                     _exit(1);
                 }
                 if(maxPipeTime > 0) alarm(maxPipeTime);
-                wait(NULL);
+                for(int x = 0; x < nPids; x++) {
+                    waitpid(pid[x],NULL,WNOHANG);
+                }
                 close(fd_pipe[pipenmr][0]);
                 _exit(actualStatus);
             }
             if(tempomaxexec > 0)
                 alarm(tempomaxexec);
         }
-
         int status;
         wait(&status);
-
-        
         status = WEXITSTATUS(status);
         if(status == 2) status = 2;
         if(status == 0 && actualStatus != 0) status = 1;
         write(fd_pipePro[1],&status,sizeof(int));
         actualStatus = status;
         kill(getppid(),SIGUSR1);
-
-        int indFinal = lseek(logs,0,SEEK_END);
-        int indFinalN= count(indFinal)+2;
-        //printf("INDICE FINAL %d \n", indFinal);
-        char* final = malloc(indFinalN*sizeof(char));  
-        sprintf(final,"%d \n",indFinal);
-        write(idx,final,indFinalN);
-        close(idx);
         close(logs);
-
         _exit(actualStatus);
     }
-     
-
     adicionarTarefa(filho, buf);    
     return 0;
 }
