@@ -62,10 +62,6 @@ void sigusr1_handler(int signum) {
     }
 }
 
-void int_handler(int signum) {
-    exec = 0;
-}
-
 int main(int argc, char const *argv[]) {
     int fdfifo, fdfile, wrfifo;
     char * buf, *option;
@@ -89,51 +85,60 @@ int main(int argc, char const *argv[]) {
         nTarefasExec[d] = -1;
         pidsExec[d] = -1;
     } 
-    option = malloc(5 * sizeof(char));
+    option = malloc(15 * sizeof(char));
     buf = malloc(100 * sizeof(char));
     signal(SIGALRM,alrm_hand);
-    signal(SIGINT,int_handler);
     signal(SIGUSR1,sigusr1_handler);
     fdfifo = open("../SO/fifo",O_RDONLY);
-    wrfifo = open("../SO/wr",O_WRONLY);
     printf("Main PID %d\n",getpid());
     while(fdfifo > 0 && exec) {
         int readBytes = 0;
         while((readBytes = read(fdfifo,buf,100)) > 0) {
+            wrfifo = open("../SO/wr",O_WRONLY);
+            write(1,"Entrou\n",8);
             buf = mySep(option,buf,' ');
+            puts(option);
+            write(1,option,strlen(buf));
             if(strcmp(option,"-i") == 0 || strcmp(option,"tempo-inactividade") == 0) {
                 maxPipeTime = atoi(buf);
+                write(wrfifo,"Novo tempo máximo de inatividade\n",35);
             }
             else if(strcmp(option,"-m") == 0 || strcmp(option,"tempo-execucao") == 0) {
                 tempomaxexec = atoi(buf);
+                write(wrfifo,"Novo tempo máximo de execucao\n",32);
             }
             else if(strcmp(option,"-e") == 0 || strcmp(option,"executar") == 0) {
+                write(1,"Antes\n",7);
                 executar(buf);
+                write(1,"Depois\n",8);
+                write(wrfifo,"Nova tarefa\n",13);
             }
             else if(strcmp(option,"-l") == 0 || strcmp(option,"listar") == 0) {
-                for(int n = 0; n<used; n++)
-                    if(pidsExec[n]!=-1)
+                for(int n = 0; n<used; n++) {
+                    if(pidsExec[n]!=-1) {
                         write(wrfifo, tarefasExec[n], strlen(tarefasExec[n]));
-                printf("l option with: %s",buf);
+                    }
+                }
             }
             else if(strcmp(option,"-t") == 0 || strcmp(option,"terminar") == 0) {
                 int r = terminarTarefa(buf);
                 if(r==0)  write(wrfifo, "Tarefa terminada", 17);
                 else if (r==-1) write(wrfifo, "Não é possível terminar a tarefa", 36);
                 else write(wrfifo, "Tarefa não está em execução", 32);
-                printf("t option with: %s",buf);
             }
             else if(strcmp(option,"-r") == 0 || strcmp(option,"historico") == 0) {
-                histTerm();
+                write(1,"Antes\n",7);
+                histTerm(wrfifo);
+                write(1,"Depois\n",8);
             }
             else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
-
+                write(1,"Antes\n",7);
                 write(wrfifo,"tempo-inatividade segs \n tempo-execucao segs \n executar p1 | p2 ... | pn \n listar \n terminar n \n historico \n ajuda \n output n \n",128);
-                printf("h option with: %s",buf);
+                write(1,"Depois\n",8);
             }
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
-                printf("o option with: %s",buf);
             }
+            close(wrfifo);
             for(int j = 0; j < 100; j++) buf[j] = '\0';
         }       
     }

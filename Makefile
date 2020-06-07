@@ -1,6 +1,6 @@
 CC= gcc
 
-CFLAGS= -I -Wall -O3 
+CFLAGS= -I -Wall 
 
 all: MainCliente MainServer
 		mkfifo fifo
