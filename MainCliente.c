@@ -1,105 +1,103 @@
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <sys/stat.h>
-#include "functions.h"
-
-int* pid;
-int nPids;
-int exec;
-int tempomaxexec;
-int maxPipeTime;
-char** nTarefasExec;
-int* pidsExec;
-int* tarefasExec;
-int used;
-int tam;
-int fd_pipePro[2];
-int nTarefa;
-int statusID;
-int actualStatus;
-
-
-int wrtToFIFO(char const *nameFifo,char *argv[],int argc){
-    int fd;
-    if((fd = open(nameFifo,O_WRONLY)) < 0 ){
-        perror("open");
-        exit(1);
+char* separateString(char * tok, char* buf) {
+    int i, j = 0;
+    char * new;
+    new = malloc(100 * sizeof(char));
+    for(i = 0; buf[i]!=' ' && buf[i] != '\n' && buf[i]; i++) {
+        tok[i] = buf[i];
     }
-    char *buffer = malloc(100 * sizeof(char));
-    char *option = malloc(5 * sizeof(char));
-    int bytesRead = 0;
-    int pid;
-        if(argc<=1){
-            if(fork()==0){
-            while((bytesRead = read(0,buffer,100)) >0){
-                char* aux = buffer;
-                buffer = mySep(option,buffer,' ');
-                buffer = aux;
-                if( strcmp(option,"tempo-inactividade") != 0 && strcmp(option,"tempo-execucao") != 0 && strcmp(option,"executar") != 0 && strcmp(option,"listar") != 0 &&
-                    strcmp(option,"terminar") != 0 && strcmp(option,"historico") != 0 && strcmp(option,"ajuda") != 0 && strcmp(option,"output") != 0){
-                    perror("comando inválido\n");
-                    }
-                else if(write(fd,buffer,bytesRead) < 0 ) {
-                    perror("write");
+    tok[i] = '\0';
+    for(i = 0; buf[i]; i++) {
+        if(buf[i] != '\'' && buf[i] != '\"' && buf[i] != '\n')
+            new[j++] = buf[i];
+    }
+    new[j] = '\0';
+    return new;
+}
+
+void shellInterpreter(int fdToServer, int fdFromServer) {
+    char* option, *buf;
+    int bytesRead;
+    buf = malloc(150 * sizeof(char));
+    option = malloc(25 * sizeof(char));
+    while((bytesRead = read(0,buf,100)) > 0) {
+        buf[strlen(buf)-1] = '\0';
+        if(strcmp(buf,"sair") == 0) break; 
+        if(fork() == 0) {
+            buf = separateString(option,buf);
+            if( strcmp(option,"tempo-inactividade") != 0 && 
+                strcmp(option,"tempo-execucao") != 0 && 
+                strcmp(option,"executar") != 0 && 
+                strcmp(option,"listar") != 0 &&
+                strcmp(option,"terminar") != 0 && 
+                strcmp(option,"historico") != 0 && 
+                strcmp(option,"ajuda") != 0 && 
+                strcmp(option,"output") != 0) {
+                    write(1,"Comando Inválido\n",19);
+                }
+            else if(write(fdToServer,buf,strlen(buf)) < 0) {
+                perror("Fifo");
+                exit(1);
+            }
+            while((bytesRead = read(fdFromServer,buf,150)) > 0) {
+                if(write(1,buf,bytesRead) < 0) {
+                    perror("Write"),
                     exit(1);
                 }
             }
         }
     }
-
-    else{
-        if(argc>1){
-            if((pid=fork())==0){
-                if( strcmp(argv[1],"-i") != 0 && strcmp(argv[1],"-m") != 0 && strcmp(argv[1],"-e") != 0  && strcmp(argv[1],"-l") != 0 && strcmp(argv[1],"-e") != 0 &&
-                    strcmp(argv[1],"-l") != 0 && strcmp(argv[1],"-r") != 0 && strcmp(argv[1],"-t") != 0 && strcmp(argv[1],"-h") != 0){
-                    write(0,"comando inválido",18);
-                    }
-                else {
-                    char *args=malloc(100*sizeof(char));
-                    sprintf(args,"%s %s",argv[1],argv[2]);
-                    int v = write(fd,args,strlen(args));
-                    if( v < 0 ) {
-                        perror("write");
-                        exit(1);
-                    }
-                }
-            }
-            
-        }
-    }
-    close(fd);
-    return pid;
 }
 
-int rdFromFIFO(const char *myserver,int pid,int argc){
-    int fd;
-    if((fd = open(myserver,O_RDONLY)) < 0 ){
-        perror("open");
+void commandInterpreter(int fdToServer, int fdFromServer, char argv1[], char argv2[]) {
+    char *args=malloc(150*sizeof(char));
+    int bytesRead;
+    sprintf(args,"%s %s",argv1,argv2);
+    if( strcmp(argv1,"-i") != 0 && 
+        strcmp(argv1,"-m") != 0 && 
+        strcmp(argv1,"-e") != 0 && 
+        strcmp(argv1,"-l") != 0 && 
+        strcmp(argv1,"-e") != 0 &&
+        strcmp(argv1,"-l") != 0 && 
+        strcmp(argv1,"-r") != 0 && 
+        strcmp(argv1,"-t") != 0 && 
+        strcmp(argv1,"-h") != 0) {
+            write(1,"Comando Inválido\n",19);
+    }
+    else if(write(fdToServer,args,strlen(args)) < 0) {
+        perror("Write");
         exit(1);
     }
-    int bytesRead=0;
-    char *buffer = malloc(155 * sizeof(char));
-    while((bytesRead = read(fd,buffer,155)) > 0){
-        int v = write(0,buffer,strlen(buffer));
-        if(v < 0){
-            perror("write");
+    while((bytesRead = read(fdFromServer,args,150)) > 0) {
+        if(write(1,args,bytesRead) < 0) {
+            perror("Write"),
             exit(1);
         }
-        close(fd);
-        if(argc>1) kill(pid,SIGINT);
     }
-   
-    
-return 0;
 }
 
 int main(int argc,char*argv[]) {
-    const char *myfifo = "../SO/fifo";
-    const char *myserver = "../SO/wr";
-    int pid = wrtToFIFO(myfifo,argv,argc);
-    rdFromFIFO(myserver,pid,argc);
+    int fdToServer, fdFromServer;
+    if((fdToServer = open("../SO/fifo", O_WRONLY)) < 0) {
+        perror("Fifo error");
+        exit(1);
+    }
+    if((fdFromServer = open("../SO/wr", O_RDONLY)) < 0) {
+        perror("Fifo error");
+        exit(1);
+    }
+    if(argc == 1) {
+        shellInterpreter(fdToServer,fdFromServer);
+    }
+    else if(argc > 1) {
+        commandInterpreter(fdToServer, fdFromServer, argv[1], argv[2]);
+    }
+    close(fdFromServer);
+    close(fdToServer);
     return 0;
 }
-
-
-
-
