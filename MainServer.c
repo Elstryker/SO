@@ -70,21 +70,23 @@ int main(int argc, char const *argv[]) {
     int fdfifo, fdfile, wrfifo, fileTarefa;
     char * buf, *option;
 
-    if((fileTarefa = open("../SO/fileTarefa.txt",O_WRONLY | O_RDONLY | O_CREAT, 0666)) < 0) {
+    if((fileTarefa = open("../SO/fileTarefa.txt",O_RDWR | O_CREAT, 0666)) < 0) {
         perror("File not found");
         exit(1);
     }
     int currentTarefa = 0;
     char* linhaTarefa = malloc(10*sizeof(char));
     int readTarefa = read(fileTarefa,linhaTarefa,10);
-    while( readTarefa > 0 ){
+    int fl=0;
+    while( readTarefa > 0 && fl!=1){
         char* tar = malloc(10*sizeof(char));
         linhaTarefa = mySep(tar,linhaTarefa,"\n");
         currentTarefa = atoi(tar);
+        //free(tar);
+        fl=1;
     }
     nTarefa=currentTarefa;
-    
-       
+    //free(linhaTarefa);
     if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT, 0666)) < 0) {
         perror("File not found");
         exit(1);
@@ -158,9 +160,9 @@ int main(int argc, char const *argv[]) {
     }
     close(fdfifo);
     close(fdfile);
-    int countTarefa=count(nTarefa)+1;
+    int countTarefa=count(nTarefa);
     char* tarefaNumero = malloc(countTarefa*sizeof(char));
-    sprintf(tarefaNumero,"%d ",nTarefa);
+    sprintf(tarefaNumero,"%d",nTarefa);
     write(fileTarefa,tarefaNumero,countTarefa);
     close(fileTarefa);
     return 0;

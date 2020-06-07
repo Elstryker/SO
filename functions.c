@@ -22,9 +22,9 @@ int output(int n){
     int wr = open("../SO/wr", O_WRONLY);
     int logs = open("logs.txt",O_RDONLY);
     int idx = open("log.idx",O_RDONLY);
-    char* index = malloc(10*sizeof(char));
-    char* buffer = malloc(50*sizeof(char));
-    int readIdx = read(idx,index,10);
+    char* index = malloc(100*sizeof(char));
+    char* buffer = malloc(1000*sizeof(char));
+    int readIdx = read(idx,index,100);
     char* nTarefa = malloc(5*sizeof(char));
     char* indInicial = malloc(5*sizeof(char));
     char* indFinal = malloc(5*sizeof(char));
@@ -235,10 +235,13 @@ int executar(char * buf) {
 
         int indFinal = lseek(logs,0,SEEK_END);
         int indFinalN= count(indFinal)+2;
-        printf("INDICE FINAL %d \n", indFinal);
+
+        //printf("INDICE FINAL %d \n", indFinal);
         char* final = malloc(indFinalN*sizeof(char));  
         sprintf(final,"%d \n",indFinal);
         write(idx,final,indFinalN);
+
+
         close(idx);
         close(logs);
 
@@ -247,6 +250,8 @@ int executar(char * buf) {
         if(status == 0 && actualStatus != 0) status = 1;
         write(fd_pipePro[1],&status,sizeof(int));
         actualStatus = status;
+
+        
         kill(getppid(),SIGUSR1);
         _exit(actualStatus);
     }
