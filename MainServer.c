@@ -70,7 +70,7 @@ int main(int argc, char const *argv[]) {
     int fdfifo, fdfile, wrfifo, fileTarefa;
     char * buf, *option;
 
-    if((fileTarefa = open("../SO/fileTarefa.txt",O_WRONLY | O_RDONLY | O_CREAT, 0666)) < 0) {
+    if((fileTarefa = open("../SO/fileTarefa.txt",O_RDWR | O_CREAT, 0666)) < 0) {
         perror("File not found");
         exit(1);
     }

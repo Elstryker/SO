@@ -22,9 +22,9 @@ int output(int n){
     int wr = open("../SO/wr", O_WRONLY);
     int logs = open("logs.txt",O_RDONLY);
     int idx = open("log.idx",O_RDONLY);
-    char* index = malloc(10*sizeof(char));
-    char* buffer = malloc(50*sizeof(char));
-    int readIdx = read(idx,index,10);
+    char* index = malloc(100*sizeof(char));
+    char* buffer = malloc(1000*sizeof(char));
+    int readIdx = read(idx,index,100);
     char* nTarefa = malloc(5*sizeof(char));
     char* indInicial = malloc(5*sizeof(char));
     char* indFinal = malloc(5*sizeof(char));
@@ -79,29 +79,20 @@ int executar(char * buf) {
     int indInicial;
     char* inicial;
     char* tar;
-    
-    
-        
     if((filho=fork()) == 0) {
-
-
         logs = open("logs.txt",O_WRONLY | O_APPEND);
         idx = open("log.idx",O_WRONLY | O_APPEND);
-
         printf("TAREFA %i \n", nTarefa);
         int nTarefaN= count(nTarefa)+1;
         tar = malloc(nTarefaN*sizeof(char));
         sprintf(tar,"%d ",nTarefa);
         write(idx,tar,nTarefaN);
-
-
         indInicial = lseek(logs,0, SEEK_END);
         int indInicialN= count(indInicial)+1;
         printf("INDICE INICIAL %i  \n", indInicial);
         char* inicial = malloc(indInicialN*sizeof(char));
         sprintf(inicial,"%d ",indInicial);
         write(idx,inicial,indInicialN);
-        
         statusID = 1;
         nPids = 0;
         printf("Execute PID %d\n",getpid());
@@ -228,10 +219,11 @@ int executar(char * buf) {
                 alarm(tempomaxexec);
         }
 
-        
-
         int status;
         wait(&status);
+
+        close(logs);
+        logs = open("logs.txt",O_APPEND);
 
         int indFinal = lseek(logs,0,SEEK_END);
         int indFinalN= count(indFinal)+2;
@@ -241,7 +233,6 @@ int executar(char * buf) {
         write(idx,final,indFinalN);
         close(idx);
         close(logs);
-
         status = WEXITSTATUS(status);
         if(status == 2) status = 2;
         if(status == 0 && actualStatus != 0) status = 1;
