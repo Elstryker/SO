@@ -1,0 +1,42 @@
+total 84
+prw-rw-r-- 1 alexandra alexandra     0 Jun  7 14:49 fifo
+-rw-rw-r-- 1 alexandra alexandra 10096 Jun  7 14:48 functions.c
+-rw-rw-r-- 1 alexandra alexandra   380 Jun  7 10:34 functions.h
+-rw-rw-r-- 1 alexandra alexandra    20 Jun  7 14:49 log.idx
+-rwxr-x--T 1 alexandra alexandra     0 Jun  7 14:49 logs.txt
+-rwxrwxr-x 1 alexandra alexandra 18960 Jun  7 14:49 MainCliente
+-rw-rw-r-- 1 alexandra alexandra  2889 Jun  6 20:03 MainCliente.c
+-rwxrwxr-x 1 alexandra alexandra 19160 Jun  7 14:49 MainServer
+-rw-rw-r-- 1 alexandra alexandra  5215 Jun  7 10:36 MainServer.c
+-rw-rw-r-- 1 alexandra alexandra   286 Jun  6 20:03 Makefile
+-rw-rw-r-- 1 alexandra alexandra     4 Jun  2 17:04 README.md
+-rw-rw-r-- 1 alexandra alexandra  1019 Jun  7 14:48 TarefasTerminadas.txt
+prw-rw-r-- 1 alexandra alexandra     0 Jun  7 14:49 wr
+total 88
+prw-rw-r-- 1 alexandra alexandra     0 Jun  7 14:59 fifo
+-rw-rw-r-- 1 alexandra alexandra 10088 Jun  7 14:59 functions.c
+-rw-rw-r-- 1 alexandra alexandra   380 Jun  7 10:34 functions.h
+-rw-rw-r-- 1 alexandra alexandra    40 Jun  7 14:59 log.idx
+-rwxr-x--T 1 alexandra alexandra   825 Jun  7 14:49 logs.txt
+-rwxrwxr-x 1 alexandra alexandra 18960 Jun  7 14:59 MainCliente
+-rw-rw-r-- 1 alexandra alexandra  2889 Jun  6 20:03 MainCliente.c
+-rwxrwxr-x 1 alexandra alexandra 19160 Jun  7 14:59 MainServer
+-rw-rw-r-- 1 alexandra alexandra  5215 Jun  7 10:36 MainServer.c
+-rw-rw-r-- 1 alexandra alexandra   286 Jun  6 20:03 Makefile
+-rw-rw-r-- 1 alexandra alexandra     4 Jun  2 17:04 README.md
+-rw-rw-r-- 1 alexandra alexandra  1040 Jun  7 14:49 TarefasTerminadas.txt
+prw-rw-r-- 1 alexandra alexandra     0 Jun  7 14:59 wr
+total 88
+prw-rw-r-- 1 alexandra alexandra     0 Jun  7 15:00 fifo
+-rw-rw-r-- 1 alexandra alexandra 10088 Jun  7 14:59 functions.c
+-rw-rw-r-- 1 alexandra alexandra   380 Jun  7 10:34 functions.h
+-rw-rw-r-- 1 alexandra alexandra    10 Jun  7 15:00 log.idx
+-rwxr-x--T 1 alexandra alexandra  1650 Jun  7 14:59 logs.txt
+-rwxrwxr-x 1 alexandra alexandra 18960 Jun  7 14:59 MainCliente
+-rw-rw-r-- 1 alexandra alexandra  2889 Jun  6 20:03 MainCliente.c
+-rwxrwxr-x 1 alexandra alexandra 19160 Jun  7 14:59 MainServer
+-rw-rw-r-- 1 alexandra alexandra  5215 Jun  7 10:36 MainServer.c
+-rw-rw-r-- 1 alexandra alexandra   286 Jun  6 20:03 Makefile
+-rw-rw-r-- 1 alexandra alexandra     4 Jun  2 17:04 README.md
+-rw-rw-r-- 1 alexandra alexandra  1061 Jun  7 14:59 TarefasTerminadas.txt
+prw-rw-r-- 1 alexandra alexandra     0 Jun  7 14:59 wr

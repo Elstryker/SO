@@ -10,6 +10,8 @@
 #include <sys/types.h>
 
 
+
+int output(int n);
 char* mySep(char* tok, char* buf, char delim);
 int executar(char* buf);
 void histTerm();

@@ -44,7 +44,7 @@ void sigusr1_handler(int signum) {
             nTarefasExec[x] = -1;
         }
     }
-    if((fd = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND)) < 0) {
+    if((fd = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND, 0666)) < 0) {
         perror("File not found");
     }
     else {
@@ -70,7 +70,7 @@ void int_handler(int signum) {
 int main(int argc, char const *argv[]) {
     int fdfifo, fdfile, wrfifo;
     char * buf, *option;
-    if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT)) < 0) {
+    if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT, 0666)) < 0) {
         perror("File not found");
         exit(1);
     }
@@ -133,6 +133,7 @@ int main(int argc, char const *argv[]) {
                 printf("h option with: %s",buf);
             }
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
+                output(atoi(buf));
                 printf("o option with: %s",buf);
             }
             for(int j = 0; j < 100; j++) buf[j] = '\0';
