@@ -222,28 +222,23 @@ int executar(char * buf) {
         int status;
         wait(&status);
 
-        close(logs);
-        logs = open("logs.txt",O_APPEND);
-
-        int indFinal = lseek(logs,0,SEEK_END);
-        int indFinalN= count(indFinal)+2;
-
-        //printf("INDICE FINAL %d \n", indFinal);
-        char* final = malloc(indFinalN*sizeof(char));  
-        sprintf(final,"%d \n",indFinal);
-        write(idx,final,indFinalN);
-
-
-        close(idx);
-        close(logs);
+        
         status = WEXITSTATUS(status);
         if(status == 2) status = 2;
         if(status == 0 && actualStatus != 0) status = 1;
         write(fd_pipePro[1],&status,sizeof(int));
         actualStatus = status;
-
-        
         kill(getppid(),SIGUSR1);
+
+        int indFinal = lseek(logs,0,SEEK_END);
+        int indFinalN= count(indFinal)+2;
+        //printf("INDICE FINAL %d \n", indFinal);
+        char* final = malloc(indFinalN*sizeof(char));  
+        sprintf(final,"%d \n",indFinal);
+        write(idx,final,indFinalN);
+        close(idx);
+        close(logs);
+
         _exit(actualStatus);
     }
      

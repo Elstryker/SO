@@ -163,7 +163,9 @@ int main(int argc, char const *argv[]) {
     int countTarefa=count(nTarefa);
     char* tarefaNumero = malloc(countTarefa*sizeof(char));
     sprintf(tarefaNumero,"%d",nTarefa);
+    lseek(fileTarefa, 0, SEEK_SET);
     write(fileTarefa,tarefaNumero,countTarefa);
+
     close(fileTarefa);
     return 0;
 }
