@@ -29,7 +29,7 @@ int output(int n){
     char* indInicial = malloc(5*sizeof(char));
     char* indFinal = malloc(5*sizeof(char));
     while( readIdx > 0 ){
-        index = mySep(indFinal,index,"\n");
+        index = mySep(indFinal,index,'\n');
         indFinal = mySep(nTarefa,indFinal,' ');
         if(atoi(nTarefa)==n){
             indFinal = mySep(indInicial,indFinal,' ');
@@ -74,8 +74,8 @@ int executar(char * buf) {
     char* inicial;
     char* tar;
     if((filho=fork()) == 0) {
-        logs = open("logs.txt",O_WRONLY | O_CREAT | O_APPEND);
-        idx = open("log.idx",O_WRONLY | O_CREAT | O_APPEND);
+        logs = open("logs.txt",O_WRONLY | O_CREAT | O_APPEND,0666);
+        idx = open("log.idx",O_WRONLY | O_CREAT | O_APPEND,0666);
         int nTarefaN= count(nTarefa)+1;
         tar = malloc(nTarefaN*sizeof(char));
         sprintf(tar,"%d ",nTarefa);
