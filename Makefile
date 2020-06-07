@@ -9,7 +9,7 @@ all: MainCliente MainServer
 
 
 MainCliente: 
-		gcc MainCliente.c functions.c  $(CFLAGS) -o MainCliente
+		gcc MainCliente.c $(CFLAGS) -o MainCliente
 
 MainServer: 
 		gcc MainServer.c functions.c $(CFLAGS) -o MainServer

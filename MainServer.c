@@ -32,9 +32,8 @@ void sigusr1_handler(int signum) {
     int pidusr, status, x, fd, numTarefa;
     char* buf, *command;
     buf = malloc(200 * sizeof(char));
-    read(fd_pipePro[0],&pidusr,sizeof(int));
-    pidusr = wait(&status);
-    status = WEXITSTATUS(status);
+    read(fd_pipePro[0],&status,sizeof(int));
+    pidusr = wait(NULL);
     for(x = 0; x < used; x++) {
         if(pidsExec[x] == pidusr) {
             pidsExec[x] = -1;
@@ -68,8 +67,24 @@ void int_handler(int signum) {
 }
 
 int main(int argc, char const *argv[]) {
-    int fdfifo, fdfile, wrfifo;
+    int fdfifo, fdfile, wrfifo, fileTarefa;
     char * buf, *option;
+
+    if((fileTarefa = open("../SO/fileTarefa.txt",O_WRONLY | O_RDONLY | O_CREAT, 0666)) < 0) {
+        perror("File not found");
+        exit(1);
+    }
+    int currentTarefa = 0;
+    char* linhaTarefa = malloc(10*sizeof(char));
+    int readTarefa = read(fileTarefa,linhaTarefa,10);
+    while( readTarefa > 0 ){
+        char* tar = malloc(10*sizeof(char));
+        linhaTarefa = mySep(tar,linhaTarefa,"\n");
+        currentTarefa = atoi(tar);
+    }
+    nTarefa=currentTarefa;
+    
+       
     if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT, 0666)) < 0) {
         perror("File not found");
         exit(1);
@@ -80,7 +95,6 @@ int main(int argc, char const *argv[]) {
     exec = 1;
     pid = malloc(10 * sizeof(int));
     nPids = 0;
-    nTarefa = 0;
     tam = 1;
     used=0;
     tarefasExec = malloc(sizeof(char*));
@@ -144,5 +158,10 @@ int main(int argc, char const *argv[]) {
     }
     close(fdfifo);
     close(fdfile);
+    int countTarefa=count(nTarefa)+1;
+    char* tarefaNumero = malloc(countTarefa*sizeof(char));
+    sprintf(tarefaNumero,"%d ",nTarefa);
+    write(fileTarefa,tarefaNumero,countTarefa);
+    close(fileTarefa);
     return 0;
 }

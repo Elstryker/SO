@@ -87,15 +87,20 @@ int executar(char * buf) {
 
         logs = open("logs.txt",O_WRONLY | O_APPEND);
         idx = open("log.idx",O_WRONLY | O_APPEND);
+
         printf("TAREFA %i \n", nTarefa);
-        tar = malloc(5*sizeof(char));
+        int nTarefaN= count(nTarefa)+1;
+        tar = malloc(nTarefaN*sizeof(char));
         sprintf(tar,"%d ",nTarefa);
-        write(idx,tar,5);
+        write(idx,tar,nTarefaN);
+
+
         indInicial = lseek(logs,0, SEEK_END);
+        int indInicialN= count(indInicial)+1;
         printf("INDICE INICIAL %i  \n", indInicial);
-        char* inicial = malloc(5*sizeof(char));
-        snprintf(inicial,5,"%d ",indInicial);
-        write(idx,inicial,5);
+        char* inicial = malloc(indInicialN*sizeof(char));
+        sprintf(inicial,"%d ",indInicial);
+        write(idx,inicial,indInicialN);
         
         statusID = 1;
         nPids = 0;
@@ -229,15 +234,18 @@ int executar(char * buf) {
         wait(&status);
 
         int indFinal = lseek(logs,0,SEEK_END);
+        int indFinalN= count(indFinal)+2;
         printf("INDICE FINAL %d \n", indFinal);
-        char* final = malloc(5*sizeof(char));  
-        snprintf(final,5,"%d \n",indFinal);
-        write(idx,final,5);
+        char* final = malloc(indFinalN*sizeof(char));  
+        sprintf(final,"%d \n",indFinal);
+        write(idx,final,indFinalN);
         close(idx);
         close(logs);
 
-        write(fd_pipePro[1],&status,sizeof(int));
         status = WEXITSTATUS(status);
+        if(status == 2) status = 2;
+        if(status == 0 && actualStatus != 0) status = 1;
+        write(fd_pipePro[1],&status,sizeof(int));
         actualStatus = status;
         kill(getppid(),SIGUSR1);
         _exit(actualStatus);
@@ -302,3 +310,14 @@ int terminarTarefa(char*command){
     return k;
 }
 
+
+
+int count(int numero){
+    int n = 0;
+    if(numero==0) return 1;
+    while(numero!=0){
+        numero/=10;
+        n++;
+    }
+    return n;
+}
