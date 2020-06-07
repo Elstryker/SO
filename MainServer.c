@@ -43,7 +43,7 @@ void sigusr1_handler(int signum) {
             nTarefasExec[x] = -1;
         }
     }
-    if((fd = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND)) < 0) {
+    if((fd = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND, 0666)) < 0) {
         perror("File not found");
     }
     else {
@@ -63,9 +63,27 @@ void sigusr1_handler(int signum) {
 }
 
 int main(int argc, char const *argv[]) {
-    int fdfifo, fdfile, wrfifo;
+    int fdfifo, fdfile, wrfifo, fileTarefa;
     char * buf, *option;
-    if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT)) < 0) {
+
+    if((fileTarefa = open("../SO/fileTarefa.txt",O_RDWR | O_CREAT, 0666)) < 0) {
+        perror("File not found");
+        exit(1);
+    }
+    int currentTarefa = 0;
+    char* linhaTarefa = malloc(10*sizeof(char));
+    int readTarefa = read(fileTarefa,linhaTarefa,10);
+    int fl=0;
+    while( readTarefa > 0 && fl!=1){
+        char* tar = malloc(10*sizeof(char));
+        linhaTarefa = mySep(tar,linhaTarefa,"\n");
+        currentTarefa = atoi(tar);
+        //free(tar);
+        fl=1;
+    }
+    nTarefa=currentTarefa;
+    //free(linhaTarefa);
+    if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT, 0666)) < 0) {
         perror("File not found");
         exit(1);
     }
@@ -75,7 +93,6 @@ int main(int argc, char const *argv[]) {
     exec = 1;
     pid = malloc(10 * sizeof(int));
     nPids = 0;
-    nTarefa = 0;
     tam = 1;
     used=0;
     tarefasExec = malloc(sizeof(char*));
@@ -137,6 +154,8 @@ int main(int argc, char const *argv[]) {
                 write(1,"Depois\n",8);
             }
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
+                output(atoi(buf));
+                printf("o option with: %s",buf);
             }
             close(wrfifo);
             for(int j = 0; j < 100; j++) buf[j] = '\0';
@@ -147,5 +166,10 @@ int main(int argc, char const *argv[]) {
     }
     close(fdfifo);
     close(fdfile);
+    int countTarefa=count(nTarefa);
+    char* tarefaNumero = malloc(countTarefa*sizeof(char));
+    sprintf(tarefaNumero,"%d",nTarefa);
+    write(fileTarefa,tarefaNumero,countTarefa);
+    close(fileTarefa);
     return 0;
 }

@@ -17,6 +17,35 @@ extern int statusID; // Identificador de tipo erro
 extern int actualStatus; // Estado atual do processo 
 
 
+
+int output(int n){
+    int wr = open("../SO/wr", O_WRONLY);
+    int logs = open("logs.txt",O_RDONLY);
+    int idx = open("log.idx",O_RDONLY);
+    char* index = malloc(100*sizeof(char));
+    char* buffer = malloc(1000*sizeof(char));
+    int readIdx = read(idx,index,100);
+    char* nTarefa = malloc(5*sizeof(char));
+    char* indInicial = malloc(5*sizeof(char));
+    char* indFinal = malloc(5*sizeof(char));
+    while( readIdx > 0 ){
+        index = mySep(indFinal,index,"\n");
+        indFinal = mySep(nTarefa,indFinal,' ');
+        if(atoi(nTarefa)==n){
+            indFinal = mySep(indInicial,indFinal,' ');
+            int dif = atoi(indFinal)-atoi(indInicial)+1;
+            lseek(logs,atoi(indInicial),SEEK_SET);
+            int readLogs =read(logs,buffer,dif);
+            write(wr,buffer,dif);
+            break;
+        }
+    }
+    return 0;
+}
+
+
+
+
 void histTerm(int fd){
     int tarefas;
     char buf[100];
@@ -40,7 +69,24 @@ char* mySep(char* tok, char *buf, char delim) {
 
 int executar(char * buf) {
     int filho = -1;
+    int logs, idx;
+    int indInicial;
+    char* inicial;
+    char* tar;
     if((filho=fork()) == 0) {
+        logs = open("logs.txt",O_WRONLY | O_APPEND);
+        idx = open("log.idx",O_WRONLY | O_APPEND);
+        printf("TAREFA %i \n", nTarefa);
+        int nTarefaN= count(nTarefa)+1;
+        tar = malloc(nTarefaN*sizeof(char));
+        sprintf(tar,"%d ",nTarefa);
+        write(idx,tar,nTarefaN);
+        indInicial = lseek(logs,0, SEEK_END);
+        int indInicialN= count(indInicial)+1;
+        printf("INDICE INICIAL %i  \n", indInicial);
+        char* inicial = malloc(indInicialN*sizeof(char));
+        sprintf(inicial,"%d ",indInicial);
+        write(idx,inicial,indInicialN);
         statusID = 1;
         nPids = 0;
         printf("Execute PID %d\n",getpid());
@@ -65,6 +111,7 @@ int executar(char * buf) {
         if(nmrPipes < 0) {
             if((pid[nPids++] = fork()) == 0) {
                 printf("PID child: %d\n",getpid());
+                dup2(logs,1);
                 execvp(ex[0],ex);
                 _exit(1);
             }
@@ -97,6 +144,7 @@ int executar(char * buf) {
                 if((pid[nPids++] = fork()) == 0) {
                     dup2(fd_pipe[0][0],0);
                     close(fd_pipe[0][0]);
+                    dup2(logs,1);
                     execvp(ex[0],ex);
                     _exit(1);
                 }
@@ -152,6 +200,7 @@ int executar(char * buf) {
                 if((pid[nPids++] = fork()) == 0) {
                     dup2(fd_pipe[pipenmr][0],0);
                     close(fd_pipe[pipenmr][0]);
+                    dup2(logs,1);
                     execvp(ex[0],ex);
                     _exit(1);
                 }
@@ -163,16 +212,36 @@ int executar(char * buf) {
             if(tempomaxexec > 0)
                 alarm(tempomaxexec);
         }
+
         int status;
         wait(&status);
+
+        close(logs);
+        logs = open("logs.txt",O_APPEND);
+
+        int indFinal = lseek(logs,0,SEEK_END);
+        int indFinalN= count(indFinal)+2;
+
+        //printf("INDICE FINAL %d \n", indFinal);
+        char* final = malloc(indFinalN*sizeof(char));  
+        sprintf(final,"%d \n",indFinal);
+        write(idx,final,indFinalN);
+
+
+        close(idx);
+        close(logs);
         status = WEXITSTATUS(status);
         if(status == 2) status = 2;
         if(status == 0 && actualStatus != 0) status = 1;
         write(fd_pipePro[1],&status,sizeof(int));
         actualStatus = status;
+
+        
         kill(getppid(),SIGUSR1);
         _exit(actualStatus);
     }
+     
+
     adicionarTarefa(filho, buf);    
     return 0;
 }
@@ -231,3 +300,14 @@ int terminarTarefa(char*command){
     return k;
 }
 
+
+
+int count(int numero){
+    int n = 0;
+    if(numero==0) return 1;
+    while(numero!=0){
+        numero/=10;
+        n++;
+    }
+    return n;
+}

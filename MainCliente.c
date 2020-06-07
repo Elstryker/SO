@@ -75,7 +75,8 @@ void commandInterpreter(int fdToServer, char argv1[], char argv2[]) {
         strcmp(argv1,"-l") != 0 && 
         strcmp(argv1,"-r") != 0 && 
         strcmp(argv1,"-t") != 0 && 
-        strcmp(argv1,"-h") != 0) {
+        strcmp(argv1,"-h") != 0 &&
+        strcmp(argv1,"-o") != 0) {
             write(1,"Comando Inválido\n",19);
     }
     else if(write(fdToServer,args,strlen(args)) < 0) {
