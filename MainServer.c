@@ -76,7 +76,7 @@ int main(int argc, char const *argv[]) {
     int fl=0;
     while( readTarefa > 0 && fl!=1){
         char* tar = malloc(10*sizeof(char));
-        linhaTarefa = mySep(tar,linhaTarefa,"\n");
+        //linhaTarefa = mySep(tar,linhaTarefa,"\n");
         currentTarefa = atoi(tar);
         //free(tar);
         fl=1;
@@ -101,8 +101,8 @@ int main(int argc, char const *argv[]) {
     for(int d = 0; d < tam; d++) {
         nTarefasExec[d] = -1;
         pidsExec[d] = -1;
-    } 
-    option = malloc(15 * sizeof(char));
+    }
+    option = malloc(25 * sizeof(char));
     buf = malloc(100 * sizeof(char));
     signal(SIGALRM,alrm_hand);
     signal(SIGUSR1,sigusr1_handler);
@@ -158,7 +158,6 @@ int main(int argc, char const *argv[]) {
                 printf("o option with: %s",buf);
             }
             close(wrfifo);
-            for(int j = 0; j < 100; j++) buf[j] = '\0';
         }       
     }
     if(fdfifo < 0) {

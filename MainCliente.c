@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-char* separateString(char * tok, char* buf) {
+char* separateString(char * tok, char* buf, int * b) {
     int i, j = 0;
     char * new;
     new = malloc(100 * sizeof(char));
@@ -15,8 +15,8 @@ char* separateString(char * tok, char* buf) {
     for(i = 0; buf[i]; i++) {
         if(buf[i] != '\'' && buf[i] != '\"' && buf[i] != '\n')
             new[j++] = buf[i];
+        else (*b)--;
     }
-    new[j] = '\0';
     return new;
 }
 
@@ -27,8 +27,8 @@ void shellInterpreter(int fdToServer) {
     option = malloc(25 * sizeof(char));
     while((bytesRead = read(0,buf,100)) > 0) {
         if(fork() == 0) {
-            buf = separateString(option,buf);
-            write(1,"Before write\n",14);
+            buf = separateString(option,buf,&bytesRead);
+            printf("%d\n",bytesRead);
             if( strcmp(option,"tempo-inactividade") != 0 && 
                 strcmp(option,"tempo-execucao") != 0 && 
                 strcmp(option,"executar") != 0 && 
@@ -39,15 +39,13 @@ void shellInterpreter(int fdToServer) {
                 strcmp(option,"output") != 0) {
                     write(1,"Comando Inválido\n",19);
                 }
-            else if(write(fdToServer,buf,strlen(buf)) < 0) {
+            else if(write(fdToServer,buf,bytesRead) < 0) {
                 perror("Fifo");
                 exit(1);
             }
-            write(1,"After write\n",13);
             _exit(0);
         }
         if(fork() == 0) {
-            write(1,"Before read\n",13);
             int fdFromServer;
             fdFromServer = open("../SO/wr",O_RDONLY);
             while((bytesRead = read(fdFromServer,buf,150)) > 0) {
@@ -56,7 +54,6 @@ void shellInterpreter(int fdToServer) {
                     exit(1);
                 }
             }
-            write(1,"After read\n",12);
             close(fdFromServer);
             _exit(0);
         }
