@@ -13,6 +13,7 @@
 
 int output(int n);
 char* mySep(char* tok, char* buf, char delim);
+int count(int numero);
 int executar(char* buf);
 void histTerm();
 int terminarTarefa(char*command);

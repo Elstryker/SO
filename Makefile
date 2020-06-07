@@ -1,6 +1,6 @@
 CC= gcc
 
-CFLAGS= -I -Wall -O3 
+CFLAGS= -I -Wall 
 
 all: MainCliente MainServer
 		mkfifo fifo
@@ -17,4 +17,4 @@ MainServer:
 
 
 clean:
-	rm -f *.o MainCliente MainServer fifo wr
+	rm -f *.o MainCliente MainServer fifo wr TarefasTerminadas.txt logs.txt log.idx

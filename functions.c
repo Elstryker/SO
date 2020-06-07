@@ -46,22 +46,16 @@ int output(int n){
 
 
 
-void histTerm(){
-    int tarefas, tarefasTerminadas;
-    if((tarefasTerminadas = open("../SO/TarefasTerminadas.txt",O_RDONLY)) < 0) {
-        perror("File not found");
-        exit(1);
-    }
+void histTerm(int fd){
+    int tarefas;
     char buf[100];
-    int server = open("../SO/wr",O_WRONLY);
-    while((tarefas = open("../SO/TarefasTerminadas.txt",O_RDONLY)) > 0){
-       int readBytes = 0;
-        while((readBytes = read(tarefas,buf,100)) > 0) {
-            write(server,buf,readBytes);
-        }
-        close(readBytes);
-        close(tarefas);
-    }   
+    int readBytes = 0;
+    tarefas = open("../SO/TarefasTerminadas.txt",O_RDONLY);
+    while((readBytes = read(tarefas,buf,100)) > 0) {
+        write(fd,buf,readBytes);
+    }
+    write(fd,"\n",1);
+    close(tarefas);
 }
 
 char* mySep(char* tok, char *buf, char delim) {
