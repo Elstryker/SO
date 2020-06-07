@@ -13,7 +13,7 @@ char* separateString(char * tok, char* buf, int * b) {
     }
     tok[i] = '\0';
     for(i = 0; buf[i]; i++) {
-        if(buf[i] != '\'' && buf[i] != '\"' && buf[i] != '\n')
+        if(buf[i] != '\'' && buf[i] != '\"')
             new[j++] = buf[i];
         else (*b)--;
     }
@@ -45,6 +45,7 @@ void shellInterpreter(int fdToServer) {
             }
             _exit(0);
         }
+        wait(NULL);
         if(fork() == 0) {
             int fdFromServer;
             fdFromServer = open("../SO/wr",O_RDONLY);
@@ -57,6 +58,7 @@ void shellInterpreter(int fdToServer) {
             close(fdFromServer);
             _exit(0);
         }
+        wait(NULL);
     }
 }
 
