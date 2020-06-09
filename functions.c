@@ -22,29 +22,44 @@ int output(int n){
     int wr = open("../SO/wr", O_WRONLY);
     int logs = open("logs.txt",O_RDONLY);
     int idx = open("log.idx",O_RDONLY);
-    char* index = malloc(100*sizeof(char));
+    char* index = malloc(10*sizeof(char));
     char* buffer = malloc(1000*sizeof(char));
-    int readIdx = read(idx,index,100);
-    char* nTarefa = malloc(5*sizeof(char));
-    char* indInicial = malloc(5*sizeof(char));
-    char* indFinal = malloc(5*sizeof(char));
-    while( readIdx > 0 ){
-        index = mySep(indFinal,index,'\n');
-        indFinal = mySep(nTarefa,indFinal,' ');
-        if(atoi(nTarefa)==n){
-            indFinal = mySep(indInicial,indFinal,' ');
-            int dif = atoi(indFinal)-atoi(indInicial)+1;
-            lseek(logs,atoi(indInicial),SEEK_SET);
-            int readLogs =read(logs,buffer,dif);
-            write(wr,buffer,dif);
-            break;
+    int readIdx = read(idx,index,10);
+    char* nTarefa1 = malloc(5*sizeof(char));
+    char* indInicial1 = malloc(5*sizeof(char));
+    char* nTarefa2 = malloc(5*sizeof(char));
+    char* indInicial2 = malloc(5*sizeof(char));
+    int fl=0,ofs=0,readLogs=0;
+    while( readIdx > 0 && fl!=1){
+        index = mySep(indInicial1,index,'\n');
+        indInicial1 = mySep(nTarefa1,indInicial1,' ');
+        if(atoi(nTarefa1)==n){
+            write(wr,"entrou 1",9);
+            index = mySep(indInicial2,index,'\n');
+            indInicial2 = mySep(nTarefa2,indInicial2,' ');
+            if(nTarefa2!=NULL && atoi(nTarefa2)==n+1){
+                int dif = atoi(indInicial2)-atoi(indInicial1);
+                lseek(logs,atoi(indInicial1),SEEK_SET);
+                readLogs =read(logs,buffer,dif);
+                write(wr,buffer,dif);
+            }
+            else{
+                write(wr,"entrou 2",9);
+                lseek(logs,atoi(indInicial1),SEEK_SET);
+                readLogs = read(logs,buffer,1000);
+                if(readLogs>0){
+                    write(wr,buffer,strlen(buffer));
+                }
+            } 
+            fl=1;
+        }
+        else{
+            ofs += strlen(nTarefa1) + strlen(indInicial1) + 2;
+            lseek(idx,ofs,SEEK_SET);
         }
     }
     return 0;
 }
-
-
-
 
 void histTerm(int fd){
     int tarefas;
@@ -220,17 +235,7 @@ int executar(char * buf) {
         int status;
         wait(&status);
 
-        /*int indFinal = lseek(logs,0,SEEK_END);
-        int indFinalN= count(indFinal)+2;
-        printf("INDICE FINAL %d \n", indFinal);
-        char* final = malloc(indFinalN*sizeof(char));  
-        sprintf(final,"%d \n",indFinal);
-        write(idx,final,indFinalN);
-        close(idx);
-        close(logs);*/
 
-
-        
         status = WEXITSTATUS(status);
         if(status == 2) status = 2;
         if(status == 0 && actualStatus != 0) status = 1;
@@ -238,12 +243,12 @@ int executar(char * buf) {
         actualStatus = status;
         kill(getppid(),SIGUSR1);
         close(logs);
+        close(idx);
         _exit(actualStatus);
     }
     adicionarTarefa(filho, buf);    
     return 0;
 }
-
 
 void adicionarTarefa(int filho, char* buf){
     int fg = 0;

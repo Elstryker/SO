@@ -76,17 +76,17 @@ int main(int argc, char const *argv[]) {
     int fl=0;
     while( readTarefa > 0 && fl!=1){
         char* tar = malloc(10*sizeof(char));
-        linhaTarefa = mySep(tar,linhaTarefa,"\n");
+        linhaTarefa = mySep(tar,linhaTarefa,'\n');
         currentTarefa = atoi(tar);
         //free(tar);
         fl=1;
     }
     nTarefa=currentTarefa;
     //free(linhaTarefa);
-    /*if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT, 0666)) < 0) {
+    if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT, 0666)) < 0) {
         perror("File not found");
         exit(1);
-    }*/
+    }
     pipe(fd_pipePro);
     tempomaxexec = -1;
     maxPipeTime = -1;
@@ -150,19 +150,23 @@ int main(int argc, char const *argv[]) {
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
                 output(atoi(buf));
             }
+            
             close(wrfifo);
-        }       
-    }
-    if(fdfifo < 0) {
-        perror("Negative fd");
-    }
-    close(fdfifo);
-    close(fdfile);
+        }
     int countTarefa=count(nTarefa);
     char* tarefaNumero = malloc(countTarefa*sizeof(char));
     sprintf(tarefaNumero,"%d",nTarefa);
-    //lseek(fileTarefa, 0, SEEK_SET);
+    lseek(fileTarefa, 0, SEEK_SET);
     write(fileTarefa,tarefaNumero,countTarefa);
-    close(fileTarefa);
+    close(fileTarefa);       
+    }
+    
+
+    if(fdfifo < 0) {
+        perror("Negative fd");
+    }
+
+    close(fdfifo);
+    close(fdfile);
     return 0;
 }
