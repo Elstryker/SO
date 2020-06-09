@@ -115,7 +115,7 @@ int main(int argc, char const *argv[]) {
             write(1,"Entrou\n",8);
             buf = mySep(option,buf,' ');
             puts(option);
-            write(1,option,strlen(buf));
+            write(1,option,strlen(option));
             if(strcmp(option,"-i") == 0 || strcmp(option,"tempo-inactividade") == 0) {
                 maxPipeTime = atoi(buf);
                 write(wrfifo,"Novo tempo máximo de inatividade\n",35);

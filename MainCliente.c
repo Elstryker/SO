@@ -25,7 +25,7 @@ char* separateString(char * tok, char* buf, int * b) {
 void shellInterpreter(int fdToServer) {
     char* option, *buf;
     int bytesRead;
-    buf = malloc(150 * sizeof(char));
+    buf = malloc(1000 * sizeof(char));
     option = malloc(25 * sizeof(char));
     while((bytesRead = read(0,buf,100)) > 0) {
         if(fork() == 0) {
@@ -51,7 +51,7 @@ void shellInterpreter(int fdToServer) {
         if(fork() == 0) {
             int fdFromServer;
             fdFromServer = open("../SO/wr",O_RDONLY);
-            while((bytesRead = read(fdFromServer,buf,150)) > 0) {
+            while((bytesRead = read(fdFromServer,buf,1000)) > 0) {
                 if(write(1,buf,bytesRead) < 0) {
                     perror("Write"),
                     exit(1);

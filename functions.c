@@ -22,9 +22,9 @@ int output(int n){
     int wr = open("../SO/wr", O_WRONLY);
     int logs = open("logs.txt",O_RDONLY);
     int idx = open("log.idx",O_RDONLY);
-    char* index = malloc(10*sizeof(char));
+    char* index = malloc(1000*sizeof(char));
     char* buffer = malloc(1000*sizeof(char));
-    int readIdx = read(idx,index,10);
+    int readIdx = read(idx,index,1000);
     char* nTarefa1 = malloc(5*sizeof(char));
     char* indInicial1 = malloc(5*sizeof(char));
     char* nTarefa2 = malloc(5*sizeof(char));
@@ -42,20 +42,21 @@ int output(int n){
                 lseek(logs,atoi(indInicial1),SEEK_SET);
                 readLogs =read(logs,buffer,dif);
                 write(wr,buffer,dif);
+                close(wr);
+                close(logs);
+                fl=1;
             }
             else{
                 write(wr,"entrou 2",9);
                 lseek(logs,atoi(indInicial1),SEEK_SET);
                 readLogs = read(logs,buffer,1000);
                 if(readLogs>0){
-                    write(wr,buffer,strlen(buffer));
+                    write(wr,buffer,readLogs);
+                    close(wr);
+                    close(logs);
+                    fl=1;
                 }
             } 
-            fl=1;
-        }
-        else{
-            ofs += strlen(nTarefa1) + strlen(indInicial1) + 2;
-            lseek(idx,ofs,SEEK_SET);
         }
     }
     return 0;
