@@ -72,17 +72,10 @@ int main(int argc, char const *argv[]) {
     }
     int currentTarefa = 0;
     char* linhaTarefa = malloc(10*sizeof(char));
-    int readTarefa = read(fileTarefa,linhaTarefa,10);
-    int fl=0;
-    while( readTarefa > 0 && fl!=1){
-        char* tar = malloc(10*sizeof(char));
-        linhaTarefa = mySep(tar,linhaTarefa,'\n');
-        currentTarefa = atoi(tar);
-        //free(tar);
-        fl=1;
-    }
+    read(fileTarefa,linhaTarefa,10);
+    currentTarefa = atoi(linhaTarefa);
     nTarefa=currentTarefa;
-    //free(linhaTarefa);
+    free(linhaTarefa);
     if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT, 0666)) < 0) {
         perror("File not found");
         exit(1);
@@ -104,17 +97,20 @@ int main(int argc, char const *argv[]) {
     }
     option = malloc(25 * sizeof(char));
     buf = malloc(100 * sizeof(char));
-    signal(SIGALRM,alrm_hand);
-    signal(SIGUSR1,sigusr1_handler);
+    if(signal(SIGALRM,alrm_hand) == SIG_ERR) {
+        perror("Signal");
+        exit(1);
+    }
+    if(signal(SIGUSR1,sigusr1_handler) == SIG_ERR) {
+        perror("Signal");
+        exit(1);
+    }
     fdfifo = open("../SO/fifo",O_RDONLY);
-    printf("Main PID %d\n",getpid());
     while(fdfifo > 0 && exec) {
         int readBytes = 0;
         while((readBytes = read(fdfifo,buf,100)) > 0) {
             wrfifo = open("../SO/wr",O_WRONLY);
-            write(1,"Entrou\n",8);
             buf = mySep(option,buf,' ');
-            puts(option);
             write(1,option,strlen(option));
             if(strcmp(option,"-i") == 0 || strcmp(option,"tempo-inactividade") == 0) {
                 maxPipeTime = atoi(buf);
@@ -126,7 +122,10 @@ int main(int argc, char const *argv[]) {
             }
             else if(strcmp(option,"-e") == 0 || strcmp(option,"executar") == 0) {
                 executar(buf);
-                write(wrfifo,"Nova tarefa\n",13);
+                char * temp = malloc(25 * sizeof(char));
+                sprintf(temp,"Nova tarefa: %d\n",nTarefa);
+                write(wrfifo,temp,strlen(temp));
+                free(temp);
             }
             else if(strcmp(option,"-l") == 0 || strcmp(option,"listar") == 0) {
                 for(int n = 0; n<used; n++) {
@@ -159,9 +158,8 @@ int main(int argc, char const *argv[]) {
     lseek(fileTarefa, 0, SEEK_SET);
     write(fileTarefa,tarefaNumero,countTarefa);
     close(fileTarefa);       
+    free(tarefaNumero);
     }
-    
-
     if(fdfifo < 0) {
         perror("Negative fd");
     }

@@ -25,12 +25,14 @@ char* separateString(char * tok, char* buf, int * b) {
 void shellInterpreter(int fdToServer) {
     char* option, *buf;
     int bytesRead;
-    buf = malloc(1000 * sizeof(char));
+    int flag = 1;
+    buf = malloc(100 * sizeof(char));
     option = malloc(25 * sizeof(char));
+    write(1,"argus$ ",8);
     while((bytesRead = read(0,buf,100)) > 0) {
         if(fork() == 0) {
+            flag = 1;
             buf = separateString(option,buf,&bytesRead);
-            printf("%d\n",bytesRead);
             if( strcmp(option,"tempo-inactividade") != 0 && 
                 strcmp(option,"tempo-execucao") != 0 && 
                 strcmp(option,"executar") != 0 && 
@@ -39,6 +41,7 @@ void shellInterpreter(int fdToServer) {
                 strcmp(option,"historico") != 0 && 
                 strcmp(option,"ajuda") != 0 && 
                 strcmp(option,"output") != 0) {
+                    flag = 0;
                     write(1,"Comando Inválido\n",19);
                 }
             else if(write(fdToServer,buf,bytesRead) < 0) {
@@ -51,22 +54,27 @@ void shellInterpreter(int fdToServer) {
         if(fork() == 0) {
             int fdFromServer;
             fdFromServer = open("../SO/wr",O_RDONLY);
-            while((bytesRead = read(fdFromServer,buf,1000)) > 0) {
-                if(write(1,buf,bytesRead) < 0) {
-                    perror("Write"),
-                    exit(1);
+            if(flag) {
+                while((bytesRead = read(fdFromServer,buf,1000)) > 0) {
+                    if(write(1,buf,bytesRead) < 0) {
+                        perror("Write"),
+                        exit(1);
+                    }
                 }
             }
             close(fdFromServer);
             _exit(0);
         }
         wait(NULL);
+        write(1,"argus$ ",8);
     }
+    free(buf); free(option);
 }
 
 void commandInterpreter(int fdToServer, char argv1[], char argv2[]) {
     char *args=malloc(150*sizeof(char));
     int bytesRead;
+    int flag = 1;
     sprintf(args,"%s %s",argv1,argv2);
     if( strcmp(argv1,"-i") != 0 && 
         strcmp(argv1,"-m") != 0 && 
@@ -78,6 +86,7 @@ void commandInterpreter(int fdToServer, char argv1[], char argv2[]) {
         strcmp(argv1,"-t") != 0 && 
         strcmp(argv1,"-h") != 0 &&
         strcmp(argv1,"-o") != 0) {
+            flag = 0;
             write(1,"Comando Inválido\n",19);
     }
     else if(write(fdToServer,args,strlen(args)) < 0) {
@@ -86,10 +95,12 @@ void commandInterpreter(int fdToServer, char argv1[], char argv2[]) {
     }
     int fdFromServer;
     fdFromServer = open("../SO/wr",O_RDONLY);
-    while((bytesRead = read(fdFromServer,args,150)) > 0) {
-        if(write(1,args,bytesRead) < 0) {
-            perror("Write"),
-            exit(1);
+    if(flag) {
+        while((bytesRead = read(fdFromServer,args,150)) > 0) {
+            if(write(1,args,bytesRead) < 0) {
+                perror("Write"),
+                exit(1);
+            }
         }
     }
     close(fdFromServer);
