@@ -95,7 +95,7 @@ int main(int argc, char const *argv[]) {
     nTarefa=currentTarefa;
     free(linhaTarefa);
     // Inicialização de variáveis
-    if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT, 0666)) < 0) {
+    if((fdfile = open("../SO/logs.txt",O_RDWR | O_APPEND | O_CREAT, 0666)) < 0) {
         perror("File not found");
         exit(1);
     }

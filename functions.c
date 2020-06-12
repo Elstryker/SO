@@ -38,7 +38,7 @@ int output(int n,int logs,int wr){
                 lseek(logs,atoi(indInicial1),SEEK_SET);
                 readLogs =read(logs,buffer,dif);
                 if(readLogs!=0) write(wr,buffer,dif);
-                fl=1;
+                fl=1;   
             }
             else{
                 lseek(logs,atoi(indInicial1),SEEK_SET);
@@ -52,12 +52,7 @@ int output(int n,int logs,int wr){
         }
         if(strlen(index)==0)  fl=1;
     }
-    free(index);
-    free(buffer);
-    free(nTarefa1);
-    free(indInicial1);
-    free(nTarefa2);
-    free(indInicial2);
+    
     return 0;
 }
 
