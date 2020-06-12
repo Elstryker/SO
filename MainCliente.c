@@ -32,11 +32,11 @@ void shellInterpreter(int fdToServer) {
     option = malloc(25 * sizeof(char));
     write(1,"argus$ ",8);
     while((bytesRead = read(0,buf,100)) > 0) {
+        if(strcmp(buf,"sair\n")== 0) break;
         if(fork() == 0) {
             flag = 1;
             buf = separateString(option,buf,&bytesRead);
             // Validação do comando lido
-            if( strcmp(option,"sair") != 0) break; 
             if( strcmp(option,"tempo-inactividade") != 0 && 
                 strcmp(option,"tempo-execucao") != 0 && 
                 strcmp(option,"executar") != 0 && 
