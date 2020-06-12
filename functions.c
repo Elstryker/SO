@@ -3,7 +3,6 @@
 
 extern int* pid; // Pids dos processos filho
 extern int nPids; // Numero de pids em pid
-extern int exec; // Flag de execução do servidor
 extern int tempomaxexec; // Variável de controlo do tempo máximo de execução
 extern int maxPipeTime; // Variável de controlo do tempo máximo de inatividade de pipes
 extern char** tarefasExec; // Guarda comando da tarefa
@@ -17,7 +16,7 @@ extern int statusID; // Identificador de tipo erro
 extern int actualStatus; // Estado atual do processo 
 
 
-
+// Função que imprime o output da tarefa desejada
 int output(int n){
     int wr = open("../SO/wr", O_WRONLY);
     int logs = open("logs.txt",O_RDONLY);
@@ -34,22 +33,21 @@ int output(int n){
         index = mySep(indInicial1,index,'\n');
         indInicial1 = mySep(nTarefa1,indInicial1,' ');
         if(atoi(nTarefa1)==n){
-            write(wr,"entrou 1",9);
             index = mySep(indInicial2,index,'\n');
             indInicial2 = mySep(nTarefa2,indInicial2,' ');
             if(nTarefa2!=NULL && atoi(nTarefa2)==n+1){
                 int dif = atoi(indInicial2)-atoi(indInicial1);
                 lseek(logs,atoi(indInicial1),SEEK_SET);
                 readLogs =read(logs,buffer,dif);
-                write(wr,buffer,dif);
+                if(readLogs!=0) write(wr,buffer,dif);
                 close(wr);
                 close(logs);
                 fl=1;
             }
             else{
-                write(wr,"entrou 2",9);
                 lseek(logs,atoi(indInicial1),SEEK_SET);
                 readLogs = read(logs,buffer,1000);
+                if(readLogs == 0) fl = 1;
                 if(readLogs>0){
                     write(wr,buffer,readLogs);
                     close(wr);
@@ -59,9 +57,16 @@ int output(int n){
             } 
         }
     }
+    free(index);
+    free(buffer);
+    free(nTarefa1);
+    free(indInicial1);
+    free(nTarefa2);
+    free(indInicial2);
     return 0;
 }
 
+// Envia os conteúdos do ficheiro historico para o cliente
 void histTerm(int fd){
     int tarefas;
     char buf[100];
@@ -74,6 +79,7 @@ void histTerm(int fd){
     close(tarefas);
 }
 
+// Separa uma string por um delimitador ou '\n', sendo o primeiro token guardado na variavel tok e o resto da string é devolvida
 char* mySep(char* tok, char *buf, char delim) {
     int i;
     for(i = 0; buf[i]!=delim && buf[i] != '\n' && buf[i]; i++) {
@@ -89,21 +95,27 @@ int executar(char * buf) {
     int indInicial;
     char* inicial;
     char* tar;
+    // Criação de um processo por cada tarefa requisitada
     if((filho=fork()) == 0) {
+        // Abertura de fd para escrita de output em ficheiros
         logs = open("logs.txt",O_WRONLY | O_CREAT | O_APPEND,0666);
         idx = open("log.idx",O_WRONLY | O_CREAT | O_APPEND,0666);
+        // Escrita do indice de alocação do output de cada tarefa
         int nTarefaN= count(nTarefa)+1;
         tar = malloc(nTarefaN*sizeof(char));
         sprintf(tar,"%d ",nTarefa);
         write(idx,tar,nTarefaN);
+        free(tar);
         indInicial = lseek(logs,0, SEEK_END);
         int indInicialN= count(indInicial)+1;
         char* inicial = malloc(indInicialN*sizeof(char));
         sprintf(inicial,"%d\n",indInicial);
         write(idx,inicial,indInicialN);
+        free(inicial);
+        // Inicialização de variáveis de controlo e identificação
         statusID = 1;
+        actualStatus = 0;
         nPids = 0;
-        printf("Execute PID %d\n",getpid());
         char**ex, **line;
         line = malloc(10 * sizeof(char*));
         ex = malloc(10 * sizeof(char*));
@@ -124,7 +136,6 @@ int executar(char * buf) {
         // Executar comando sem pipes
         if(nmrPipes < 0) {
             if((pid[nPids++] = fork()) == 0) {
-                printf("PID child: %d\n",getpid());
                 dup2(logs,1);
                 execvp(ex[0],ex);
                 _exit(1);
@@ -139,7 +150,7 @@ int executar(char * buf) {
                 statusID = 2;
                 pid = malloc(10 * sizeof(int));
                 nPids = 0;
-                printf("PID child: %d\n",getpid());
+                // Execução do primeiro comando reencaminhando o output para o pipe anonimo
                 if((pid[nPids++] = fork()) == 0) {
                     dup2(fd_pipe[0][1],1);
                     close(fd_pipe[0][1]);
@@ -155,8 +166,8 @@ int executar(char * buf) {
                 while((ex[indexEx++] = strtok(NULL," \n")) != NULL);
                 indexEx--;
                 ex[indexEx]=NULL;
+                // Execução do ultimo comando
                 if((pid[nPids++] = fork()) == 0) {
-                    printf("Ultimo com: %d\n",getpid());
                     dup2(fd_pipe[0][0],0);
                     close(fd_pipe[0][0]);
                     dup2(logs,1);
@@ -180,8 +191,8 @@ int executar(char * buf) {
                 statusID = 2;
                 pid = malloc(10 * sizeof(int));
                 nPids = 0;
-                printf("PID child: %d\n",getpid());
                 int pipenmr;
+                // Execução do primeiro comando
                 if((pid[nPids++] = fork()) == 0) {
                     dup2(fd_pipe[0][1],1);
                     close(fd_pipe[0][1]);
@@ -190,13 +201,16 @@ int executar(char * buf) {
                 }
                 if(maxPipeTime > 0) alarm(maxPipeTime);
                 close(fd_pipe[0][1]);
+                // Execução das n - 1 ultimos comandos, todos encaminnhados por pipes anonimos
                 for(pipenmr = 0; pipenmr < nmrPipes; pipenmr++) {
                     pipe(fd_pipe[pipenmr+1]);
+                    // Partir o comando
                     indexEx = 0;
                     ex[indexEx++] = strtok(line[pipenmr+1]," \n");
                     while((ex[indexEx++] = strtok(NULL," \n")) != NULL);
                     indexEx--;
                     ex[indexEx]=NULL;
+                    // Executar o comando
                     if((pid[nPids++] = fork()) == 0) {
                         dup2(fd_pipe[pipenmr][0],0);
                         dup2(fd_pipe[pipenmr+1][1],1);
@@ -215,6 +229,7 @@ int executar(char * buf) {
                 while((ex[indexEx++] = strtok(NULL," \n")) != NULL);
                 indexEx--;
                 ex[indexEx] = NULL;
+                // Execução do ultimo comando encaminhando o output para o ficheiro log
                 if((pid[nPids++] = fork()) == 0) {
                     dup2(fd_pipe[pipenmr][0],0);
                     close(fd_pipe[pipenmr][0]);
@@ -233,16 +248,17 @@ int executar(char * buf) {
             if(tempomaxexec > 0)
                 alarm(tempomaxexec);
         }
+        // Recebe o estado de saída
         int status;
         wait(&status);
-
-
         status = WEXITSTATUS(status);
-        if(status == 2) status = 2;
+        // Caso houve interrupção por tempo de execução
         if(status == 0 && actualStatus != 0) status = 1;
+        // Envia o estado para o processo pai
         write(fd_pipePro[1],&status,sizeof(int));
-        actualStatus = status;
+        // Sinaliza que terminou
         kill(getppid(),SIGUSR1);
+        actualStatus = status;
         close(logs);
         close(idx);
         _exit(actualStatus);
@@ -277,8 +293,20 @@ void adicionarTarefa(int filho, char* buf){
         nTarefa++;
         used++;
     }
+    int fileTarefa;
+    if((fileTarefa = open("../SO/fileTarefa.txt",O_RDWR | O_CREAT | O_TRUNC, 0666)) < 0) {
+        perror("File not found");
+        exit(1);
+    }
+    int countTarefa=count(nTarefa);
+    char* tarefaNumero = malloc(countTarefa*sizeof(char));
+    sprintf(tarefaNumero,"%d",nTarefa);
+    lseek(fileTarefa, 0, SEEK_SET);
+    write(fileTarefa,tarefaNumero,countTarefa);
+    close(fileTarefa);     
 }
 
+// Mata o filho responsável por uma dada tarefa
 int terminarTarefa(char*command){
     int k = 1;
     int tarefasTerminadas;
@@ -290,9 +318,9 @@ int terminarTarefa(char*command){
     for(int i=0; i<used; i++){
         if(nTarefasExec[i]==n){
             if(pidsExec[i]!=-1){
-                //matar tarefa
-                k = kill(pidsExec[i],SIGKILL);
-                //copiar para ficheiro de terminadas
+                // Matar tarefa
+                k = kill(pidsExec[i],SIGUSR2);
+                // Copiar para ficheiro de terminadas
                 char* s =  malloc(100*sizeof(char*));
                 sprintf(s, "#%i, Interrompida: %s \n", n, tarefasExec[i]); 
                 write(tarefasTerminadas, s, strlen(s));
@@ -305,7 +333,7 @@ int terminarTarefa(char*command){
 }
 
 
-
+// Conta o número de dígitos num inteiro, por exemplo, count(123) = 3
 int count(int numero){
     int n = 0;
     if(numero==0) return 1;
