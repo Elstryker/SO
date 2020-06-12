@@ -174,7 +174,7 @@ int main(int argc, char const *argv[]) {
                 write(wrfifo,"tempo-inatividade segs \n tempo-execucao segs \n executar p1 | p2 ... | pn \n listar \n terminar n \n historico \n ajuda \n output n \n",128);
             }
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
-                output(atoi(buf));
+                output(atoi(buf),fdfile,wrfifo);
             }
             close(wrfifo);
         }

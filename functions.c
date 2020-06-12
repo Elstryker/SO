@@ -17,9 +17,7 @@ extern int actualStatus; // Estado atual do processo
 
 
 // Função que imprime o output da tarefa desejada
-int output(int n){
-    int wr = open("../SO/wr", O_WRONLY);
-    int logs = open("logs.txt",O_RDONLY);
+int output(int n,int logs,int wr){
     int idx = open("log.idx",O_RDONLY);
     char* index = malloc(1000*sizeof(char));
     char* buffer = malloc(1000*sizeof(char));
@@ -40,8 +38,6 @@ int output(int n){
                 lseek(logs,atoi(indInicial1),SEEK_SET);
                 readLogs =read(logs,buffer,dif);
                 if(readLogs!=0) write(wr,buffer,dif);
-                close(wr);
-                close(logs);
                 fl=1;
             }
             else{
@@ -50,12 +46,11 @@ int output(int n){
                 if(readLogs == 0) fl = 1;
                 if(readLogs>0){
                     write(wr,buffer,readLogs);
-                    close(wr);
-                    close(logs);
                     fl=1;
                 }
             } 
         }
+        if(strlen(index)==0)  fl=1;
     }
     free(index);
     free(buffer);

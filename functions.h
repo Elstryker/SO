@@ -12,7 +12,7 @@
 
 
 
-int output(int n);
+int output(int n,int logs,int wr);
 char* mySep(char* tok, char* buf, char delim);
 int count(int numero);
 int executar(char* buf);
