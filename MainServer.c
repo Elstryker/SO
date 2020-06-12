@@ -153,19 +153,19 @@ int main(int argc, char const *argv[]) {
             
             close(wrfifo);
         }
-    int countTarefa=count(nTarefa);
+    /*int countTarefa=count(nTarefa);
     char* tarefaNumero = malloc(countTarefa*sizeof(char));
     sprintf(tarefaNumero,"%d",nTarefa);
     lseek(fileTarefa, 0, SEEK_SET);
     write(fileTarefa,tarefaNumero,countTarefa);
-    close(fileTarefa);       
+    close(fileTarefa); */      
     }
     
 
     if(fdfifo < 0) {
         perror("Negative fd");
     }
-
+    close(fileTarefa);  
     close(fdfifo);
     close(fdfile);
     return 0;

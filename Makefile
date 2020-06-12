@@ -17,4 +17,4 @@ MainServer:
 
 
 clean:
-	rm -f *.o MainCliente MainServer fifo wr TarefasTerminadas.txt logs.txt log.idx
+	rm -f *.o MainCliente MainServer fifo wr TarefasTerminadas.txt logs.txt log.idx fileTarefa.txt

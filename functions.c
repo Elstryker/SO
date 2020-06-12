@@ -41,7 +41,7 @@ int output(int n){
                 int dif = atoi(indInicial2)-atoi(indInicial1);
                 lseek(logs,atoi(indInicial1),SEEK_SET);
                 readLogs =read(logs,buffer,dif);
-                write(wr,buffer,dif);
+                if(readLogs!=0) write(wr,buffer,dif);
                 close(wr);
                 close(logs);
                 fl=1;
@@ -277,6 +277,17 @@ void adicionarTarefa(int filho, char* buf){
         nTarefa++;
         used++;
     }
+    int fileTarefa;
+    if((fileTarefa = open("../SO/fileTarefa.txt",O_RDWR | O_CREAT, 0666)) < 0) {
+        perror("File not found");
+        exit(1);
+    }
+    int countTarefa=count(nTarefa);
+    char* tarefaNumero = malloc(countTarefa*sizeof(char));
+    sprintf(tarefaNumero,"%d",nTarefa);
+    lseek(fileTarefa, 0, SEEK_SET);
+    write(fileTarefa,tarefaNumero,countTarefa);
+    close(fileTarefa);     
 }
 
 int terminarTarefa(char*command){
@@ -291,7 +302,7 @@ int terminarTarefa(char*command){
         if(nTarefasExec[i]==n){
             if(pidsExec[i]!=-1){
                 //matar tarefa
-                k = kill(pidsExec[i],SIGKILL);
+                k = kill(pidsExec[i],SIGALRM);
                 //copiar para ficheiro de terminadas
                 char* s =  malloc(100*sizeof(char*));
                 sprintf(s, "#%i, Interrompida: %s \n", n, tarefasExec[i]); 
