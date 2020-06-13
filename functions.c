@@ -257,31 +257,30 @@ int executar(char * buf) {
     return 0;
 }
 
+// Insere o número da tarefa no array de tarefas em execução e escreve no ficheiro
+// Insere o número do pid da tarefa no array de pids de tarefas
+// Insere o comando da tarefa no array de tarefas
 void adicionarTarefa(int filho, char* buf){
-    int fg = 0;
-    for(int k = 0; k<used && fg==0; k++){
+    if(used==tam){
+        nTarefasExec = realloc(nTarefasExec, 2*tam*sizeof(int));
+        tarefasExec = realloc(tarefasExec, 2*tam*sizeof(char*));
+        pidsExec = realloc(pidsExec, 2*tam*sizeof(char*));
+        tam *= 2;
+        for(int k = used; k<tam; k++){
+            pidsExec[k] = -1;
+        }
+    }
+    int f=0; 
+    for(int k = 0; k<tam && f==0; k++){
         if(pidsExec[k]==-1){
             nTarefasExec[k] = nTarefa;
             tarefasExec[k] = malloc(strlen(buf) * sizeof(char));
             strcpy (tarefasExec[k],buf);
             pidsExec[k] = filho;
             nTarefa++;
-            fg = 1;
+            used++;
+            f=1; 
         }
-    }
-    if(fg==0){
-        if(used==tam){
-            nTarefasExec = realloc(nTarefasExec, 2*tam*sizeof(int));
-            tarefasExec = realloc(tarefasExec, 2*tam*sizeof(char*));
-            pidsExec = realloc(pidsExec, 2*tam*sizeof(char*));
-            tam *= 2;
-        }
-        nTarefasExec[used] = nTarefa;
-        tarefasExec[used] = malloc(strlen(buf) * sizeof(char));
-        strcpy (tarefasExec[used],buf);
-        pidsExec[used] = filho;
-        nTarefa++;
-        used++;
     }
     int fileTarefa;
     if((fileTarefa = open("../SO/fileTarefa.txt",O_RDWR | O_CREAT | O_TRUNC, 0666)) < 0) {
