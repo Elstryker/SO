@@ -1,5 +1,5 @@
-#ifndef functions_h
-#define functions_h
+#ifndef argus_h
+#define argus_h
 
 #include <stdio.h>
 #include <unistd.h>
@@ -11,8 +11,7 @@
 #include <sys/wait.h>
 
 
-
-int output(int n);
+int output(int n,int logs,int wr);
 char* mySep(char* tok, char* buf, char delim);
 int count(int numero);
 int executar(char* buf);

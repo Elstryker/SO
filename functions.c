@@ -1,5 +1,4 @@
-
-#include "functions.h"
+#include "argus.h"
 
 extern int* pid; // Pids dos processos filho
 extern int nPids; // Numero de pids em pid
@@ -17,9 +16,7 @@ extern int actualStatus; // Estado atual do processo
 
 
 // Função que imprime o output da tarefa desejada
-int output(int n){
-    int wr = open("../SO/wr", O_WRONLY);
-    int logs = open("logs.txt",O_RDONLY);
+int output(int n,int logs,int wr){
     int idx = open("log.idx",O_RDONLY);
     char* index = malloc(1000*sizeof(char));
     char* buffer = malloc(1000*sizeof(char));
@@ -40,9 +37,7 @@ int output(int n){
                 lseek(logs,atoi(indInicial1),SEEK_SET);
                 readLogs =read(logs,buffer,dif);
                 if(readLogs!=0) write(wr,buffer,dif);
-                close(wr);
-                close(logs);
-                fl=1;
+                fl=1;   
             }
             else{
                 lseek(logs,atoi(indInicial1),SEEK_SET);
@@ -50,19 +45,13 @@ int output(int n){
                 if(readLogs == 0) fl = 1;
                 if(readLogs>0){
                     write(wr,buffer,readLogs);
-                    close(wr);
-                    close(logs);
                     fl=1;
                 }
             } 
         }
+        if(strlen(index)==0)  fl=1;
     }
-    free(index);
-    free(buffer);
-    free(nTarefa1);
-    free(indInicial1);
-    free(nTarefa2);
-    free(indInicial2);
+    
     return 0;
 }
 
@@ -112,7 +101,6 @@ int executar(char * buf) {
         write(idx,inicial,indInicialN);
         // Inicialização de variáveis de controlo e identificação
         statusID = 1;
-        actualStatus = 0;
         nPids = 0;
         char**ex, **line;
         line = malloc(10 * sizeof(char*));
@@ -265,31 +253,30 @@ int executar(char * buf) {
     return 0;
 }
 
+// Insere o número da tarefa no array de tarefas em execução e escreve no ficheiro
+// Insere o número do pid da tarefa no array de pids de tarefas
+// Insere o comando da tarefa no array de tarefas
 void adicionarTarefa(int filho, char* buf){
-    int fg = 0;
-    for(int k = 0; k<used && fg==0; k++){
+    if(used==tam){
+        nTarefasExec = realloc(nTarefasExec, 2*tam*sizeof(int));
+        tarefasExec = realloc(tarefasExec, 2*tam*sizeof(char*));
+        pidsExec = realloc(pidsExec, 2*tam*sizeof(char*));
+        tam *= 2;
+        for(int k = used; k<tam; k++){
+            pidsExec[k] = -1;
+        }
+    }
+    int f=0; 
+    for(int k = 0; k<tam && f==0; k++){
         if(pidsExec[k]==-1){
             nTarefasExec[k] = nTarefa;
             tarefasExec[k] = malloc(strlen(buf) * sizeof(char));
             strcpy (tarefasExec[k],buf);
             pidsExec[k] = filho;
             nTarefa++;
-            fg = 1;
+            used++;
+            f=1; 
         }
-    }
-    if(fg==0){
-        if(used==tam){
-            nTarefasExec = realloc(nTarefasExec, 2*tam*sizeof(int));
-            tarefasExec = realloc(tarefasExec, 2*tam*sizeof(char*));
-            pidsExec = realloc(pidsExec, 2*tam*sizeof(char*));
-            tam *= 2;
-        }
-        nTarefasExec[used] = nTarefa;
-        tarefasExec[used] = malloc(strlen(buf) * sizeof(char));
-        strcpy (tarefasExec[used],buf);
-        pidsExec[used] = filho;
-        nTarefa++;
-        used++;
     }
     int fileTarefa;
     if((fileTarefa = open("../SO/fileTarefa.txt",O_RDWR | O_CREAT | O_TRUNC, 0666)) < 0) {

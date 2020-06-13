@@ -23,6 +23,16 @@ char* separateString(char * tok, char* buf, int * b) {
     return new;
 }
 
+int compareNString( char* buffer, char* string,int n){
+    int i,ret=0;
+    for(i=0;i<n;i++){
+       if(buffer[i]!=string[i]) ret=1; 
+    }
+
+    return ret;
+}
+
+
 // Interpretador de comandos contínuo (shell)
 void shellInterpreter(int fdToServer) {
     char* option, *buf;
@@ -31,7 +41,7 @@ void shellInterpreter(int fdToServer) {
     buf = malloc(100 * sizeof(char));
     option = malloc(25 * sizeof(char));
     while((bytesRead = read(0,buf,100)) > 0) {
-        //if(strcmp(buf,"sair\n")== 0) break;
+        if(compareNString(buf,"sair\n",5)== 0) break;
         if(fork() == 0) {
             flag = 1;
             buf = separateString(option,buf,&bytesRead);
@@ -55,9 +65,7 @@ void shellInterpreter(int fdToServer) {
             if(flag) {
                 int fdFromServer;
                 fdFromServer = open("../SO/wr",O_RDONLY);
-                write(1,"Antes read\n",12);
                 while((bytesRead = read(fdFromServer,buf,500)) > 0) {
-                    write(1,"Dentro\n",8);
                     if(write(1,buf,bytesRead) < 0) {
                         perror("Write"),
                         exit(1);
@@ -66,8 +74,10 @@ void shellInterpreter(int fdToServer) {
                 close(fdFromServer);
             }
             _exit(0);
-        }
+        }        
     }
+    free(buf); 
+    free(option);
 }
 
 // Interpretador de comandos pela linha de comandos

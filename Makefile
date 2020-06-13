@@ -2,20 +2,22 @@ CC= gcc
 
 CFLAGS= -I -Wall 
 
-all: MainCliente MainServer
+all: 	Argus Argusd 
 		mkfifo fifo
 		mkfifo wr
 		touch fileTarefa.txt
 		echo "0" > fileTarefa.txt
+
 	 
+functions.o:  functions.c argus.h
+		gcc $(CFLAGS) -c functions.c -o functions.o
 
+Argus: 
+		$(CC) $(CFLAGS) argus.c -o argus
 
-MainCliente: 
-		gcc MainCliente.c $(CFLAGS) -o Argus
-
-MainServer: 
-		gcc MainServer.c functions.c $(CFLAGS) -o Server
+Argusd:  functions.o
+		$(CC) $(CFLAGS) argusd.c functions.o -o argusd
 		
 
 clean:
-	rm -f *.o Server Argus fifo wr TarefasTerminadas.txt logs.txt log.idx fileTarefa.txt
+	rm -f *.o argus argusd fifo wr TarefasTerminadas.txt logs.txt log.idx fileTarefa.txt

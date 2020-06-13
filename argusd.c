@@ -1,4 +1,4 @@
-#include "functions.h"
+#include "argus.h"
 
 int* pid; // Pids dos processos filho
 int nPids; // Numero de pids em pid
@@ -67,12 +67,12 @@ void sigusr1_handler(int signum) {
             sprintf(buf,"#%d, concluida: %s",numTarefa,command);
             write(fd,buf,strlen(buf));
         }
-        else if(status == 1) {
-            sprintf(buf,"#%d, max execucao: %s",numTarefa,command);
-            write(fd,buf,strlen(buf));
-        }
         else if(status == 2) {
             sprintf(buf,"#%d, max inatividade: %s",numTarefa,command);
+            write(fd,buf,strlen(buf));
+        }
+        if(status == 1) {
+            sprintf(buf,"#%d, max execucao: %s",numTarefa,command);
             write(fd,buf,strlen(buf));
         }
     }
@@ -95,7 +95,7 @@ int main(int argc, char const *argv[]) {
     nTarefa=currentTarefa;
     free(linhaTarefa);
     // Inicialização de variáveis
-    if((fdfile = open("../SO/logs.txt",O_WRONLY | O_APPEND | O_CREAT, 0666)) < 0) {
+    if((fdfile = open("../SO/logs.txt",O_RDWR | O_APPEND | O_CREAT, 0666)) < 0) {
         perror("File not found");
         exit(1);
     }
@@ -171,12 +171,11 @@ int main(int argc, char const *argv[]) {
                 histTerm(wrfifo);
             }
             else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
-                write(wrfifo,"tempo-inatividade segs  ou  -i segs\n tempo-execucao segs  ou  -m segs\n executar p1 | p2 ... | pn  ou  -e 'p1 | p2 ... | pn'\n listar  ou  -l\n terminar n  ou  -t n\n historico  ou  -r\n ajuda  ou  -h\n output n  ou  -o n\n",217);
+                write(wrfifo," tempo-inatividade segs  ou  -i segs\n tempo-execucao segs  ou  -m segs\n executar p1 | p2 ... | pn  ou  -e 'p1 | p2 ... | pn'\n listar  ou  -l\n terminar n  ou  -t n\n historico  ou  -r\n ajuda  ou  -h\n output n  ou  -o n\nsair\n",223);
             }
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
-                output(atoi(buf));
+                output(atoi(buf),fdfile,wrfifo);
             }
-            write(1,"Fechar fifo\n",13);
             close(wrfifo);
         }
     }
