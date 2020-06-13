@@ -157,7 +157,9 @@ int main(int argc, char const *argv[]) {
             else if(strcmp(option,"-l") == 0 || strcmp(option,"listar") == 0) {
                 for(int n = 0; n<used; n++) {
                     if(pidsExec[n]!=-1) {
-                        write(wrfifo, tarefasExec[n], strlen(tarefasExec[n]));
+                        char* s = malloc(100*sizeof(char));
+                        sprintf(s, "#%i: %s \n",nTarefasExec[n], tarefasExec[n]);
+                        write(wrfifo, s, strlen(s));
                     }
                 }
             }
