@@ -2,19 +2,21 @@ CC= gcc
 
 CFLAGS= -I -Wall 
 
-all: 	argus argusd
+all: 	Argus Argusd 
 		mkfifo fifo
 		mkfifo wr
 		touch fileTarefa.txt
 		echo "0" > fileTarefa.txt
-	 
 
+	 
+functions.o:  functions.c argus.h
+		gcc $(CFLAGS) -c functions.c -o functions.o
 
 Argus: 
-		($CC) $(CFLAGS) argus.c -o argus
+		$(CC) $(CFLAGS) argus.c -o argus
 
-Argusd: 
-		($CC) $(CFLAGS) argusd.c functions.c -o argusd
+Argusd:  functions.o
+		$(CC) $(CFLAGS) argusd.c functions.o -o argusd
 		
 
 clean:

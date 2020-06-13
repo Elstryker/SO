@@ -171,7 +171,7 @@ int main(int argc, char const *argv[]) {
                 histTerm(wrfifo);
             }
             else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
-                write(wrfifo,"tempo-inatividade segs \n tempo-execucao segs \n executar p1 | p2 ... | pn \n listar \n terminar n \n historico \n ajuda \n output n \n",128);
+                write(wrfifo,"tempo-inatividade segs \n tempo-execucao segs \n executar p1 | p2 ... | pn \n listar \n terminar n \n historico \n ajuda \n output n \n sair\n",134);
             }
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
                 output(atoi(buf),fdfile,wrfifo);
