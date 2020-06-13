@@ -40,7 +40,6 @@ void shellInterpreter(int fdToServer) {
     int flag = 1;
     buf = malloc(100 * sizeof(char));
     option = malloc(25 * sizeof(char));
-    write(1,"argus$ ",8);
     while((bytesRead = read(0,buf,100)) > 0) {
         if(compareNString(buf,"sair\n",5)== 0) break;
         if(fork() == 0) {
@@ -63,29 +62,19 @@ void shellInterpreter(int fdToServer) {
                 perror("Fifo");
                 exit(1);
             }
-            _exit(flag);
-        }
-        int estado;
-        wait(&estado);
-        flag = WEXITSTATUS(estado);
-        // Se o comando pede resposta do servidor, lê essa resposta, através da flag
-        if(flag) {
-            if(fork() == 0) {
+            if(flag) {
                 int fdFromServer;
                 fdFromServer = open("../SO/wr",O_RDONLY);
-                while((bytesRead = read(fdFromServer,buf,1000)) > 0) {
+                while((bytesRead = read(fdFromServer,buf,500)) > 0) {
                     if(write(1,buf,bytesRead) < 0) {
                         perror("Write"),
                         exit(1);
                     }
                 }
                 close(fdFromServer);
-                _exit(0);
             }
-            wait(NULL);
-        }
-        write(1,"argus$ ",8);
-        
+            _exit(0);
+        }        
     }
     free(buf); 
     free(option);
