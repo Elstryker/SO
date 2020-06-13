@@ -1,5 +1,4 @@
-
-#include "functions.h"
+#include "argus.h"
 
 extern int* pid; // Pids dos processos filho
 extern int nPids; // Numero de pids em pid
