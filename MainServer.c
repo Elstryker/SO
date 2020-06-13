@@ -152,7 +152,7 @@ int main(int argc, char const *argv[]) {
                 char * temp = malloc(25 * sizeof(char));
                 sprintf(temp,"Nova tarefa: %d\n",nTarefa - 1);
                 write(wrfifo,temp,strlen(temp));
-                free(temp);
+                close(wrfifo);
             }
             else if(strcmp(option,"-l") == 0 || strcmp(option,"listar") == 0) {
                 for(int n = 0; n<used; n++) {
@@ -171,11 +171,12 @@ int main(int argc, char const *argv[]) {
                 histTerm(wrfifo);
             }
             else if(strcmp(option,"-h") == 0 || strcmp(option,"ajuda") == 0) {
-                write(wrfifo,"tempo-inatividade segs \n tempo-execucao segs \n executar p1 | p2 ... | pn \n listar \n terminar n \n historico \n ajuda \n output n \n",128);
+                write(wrfifo,"tempo-inatividade segs  ou  -i segs\n tempo-execucao segs  ou  -m segs\n executar p1 | p2 ... | pn  ou  -e 'p1 | p2 ... | pn'\n listar  ou  -l\n terminar n  ou  -t n\n historico  ou  -r\n ajuda  ou  -h\n output n  ou  -o n\n",217);
             }
             else if(strcmp(option,"-o") == 0 || strcmp(option,"output") == 0) {
                 output(atoi(buf));
             }
+            write(1,"Fechar fifo\n",13);
             close(wrfifo);
         }
     }

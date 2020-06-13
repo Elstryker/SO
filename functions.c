@@ -105,13 +105,11 @@ int executar(char * buf) {
         tar = malloc(nTarefaN*sizeof(char));
         sprintf(tar,"%d ",nTarefa);
         write(idx,tar,nTarefaN);
-        free(tar);
         indInicial = lseek(logs,0, SEEK_END);
         int indInicialN= count(indInicial)+1;
         char* inicial = malloc(indInicialN*sizeof(char));
         sprintf(inicial,"%d\n",indInicial);
         write(idx,inicial,indInicialN);
-        free(inicial);
         // Inicialização de variáveis de controlo e identificação
         statusID = 1;
         actualStatus = 0;
@@ -329,6 +327,7 @@ int terminarTarefa(char*command){
             }
         }
  	}
+     close(tarefasTerminadas);
     return k;
 }
 
