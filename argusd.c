@@ -1,7 +1,7 @@
 #include "argus.h"
 
-int* pid; // Pids dos processos filho
-int nPids; // Numero de pids em pid
+int* childpids; // Pids dos processos filho
+int nPids; // Numero de pids em childpids
 int tempomaxexec; // Variável de controlo do tempo máximo de execução
 int maxPipeTime; // Variável de controlo do tempo máximo de inatividade de pipes
 char** tarefasExec; // Guarda comando da tarefa
@@ -19,25 +19,25 @@ void alrm_hand(int signum) {
     actualStatus = statusID;
     // Envio do sinal para os processos filhos para o caso de haver processos netos e matar todos os processos relativos
     for(int x = 0; x < nPids; x++) {
-        kill(pid[x],SIGALRM);
-        wait(NULL);
+        kill(childpids[x],SIGALRM);
     }
+    wait(NULL);
     // Terminação dos processos filho
     for(int x = 0; x < nPids; x++) {
-        if(pid[x] != -1)
-            kill(pid[x],SIGKILL);
+        if(childpids[x] != -1)
+            kill(childpids[x],SIGKILL);
     }
 }
 
 // Sinal que mata os filhos recursivamente e depois mata-se a si próprio
 void sigusr2_handler(int signum) {
     for(int x = 0; x < nPids; x++) {
-        kill(pid[x],SIGUSR2);
+        kill(childpids[x],SIGUSR2);
         wait(NULL);
     }
     for(int x = 0; x < nPids; x++) {
-        if(pid[x] != -1)
-            kill(pid[x],SIGKILL);
+        if(childpids[x] != -1)
+            kill(childpids[x],SIGKILL);
     }
     kill(getpid(),SIGKILL);
 }
@@ -106,10 +106,10 @@ int main(int argc, char const *argv[]) {
     pipe(fd_pipePro);
     tempomaxexec = -1;
     maxPipeTime = -1;
-    pid = malloc(10 * sizeof(int));
-    nPids = 0;
     tam = 1;
     used=0;
+    childpids = malloc(10 * sizeof(int));
+    nPids = 0;
     tarefasExec = malloc(sizeof(char*));
     nTarefasExec = malloc(sizeof(int));
     pidsExec = malloc(sizeof(int));
@@ -192,11 +192,5 @@ int main(int argc, char const *argv[]) {
     close(fileTarefa);  
     close(fdfifo);
     close(fdfile);
-    free(pid);
-    free(tarefasExec);
-    free(nTarefasExec);
-    free(pidsExec);
-    free(option);
-    free(buf);
     return 0;
 }

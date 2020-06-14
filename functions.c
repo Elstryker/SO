@@ -1,7 +1,7 @@
 #include "argus.h"
 
-extern int* pid; // Pids dos processos filho
-extern int nPids; // Numero de pids em pid
+extern int* childpids; // Pids dos processos filho
+extern int nPids; // Numero de pids em childpids
 extern int tempomaxexec; // Variável de controlo do tempo máximo de execução
 extern int maxPipeTime; // Variável de controlo do tempo máximo de inatividade de pipes
 extern char** tarefasExec; // Guarda comando da tarefa
@@ -121,7 +121,7 @@ int executar(char * buf) {
         ex[indexEx]=NULL;
         // Executar comando sem pipes
         if(nmrPipes < 0) {
-            if((pid[nPids++] = fork()) == 0) {
+            if((childpids[(nPids)++] = fork()) == 0) {
                 dup2(logs,1);
                 execvp(ex[0],ex);
                 _exit(1);
@@ -131,19 +131,19 @@ int executar(char * buf) {
         }
         // Executar comando com apenas 1 fd_pipe[0]
         else if(nmrPipes == 0) {
-            if((pid[nPids++] = fork()) == 0) {
+            if((childpids[(nPids)++] = fork()) == 0) {
                 actualStatus = 0;
                 statusID = 2;
-                pid = malloc(10 * sizeof(int));
                 nPids = 0;
                 // Execução do primeiro comando reencaminhando o output para o pipe anonimo
-                if((pid[nPids++] = fork()) == 0) {
+                if((childpids[(nPids)] = fork()) == 0) {
                     dup2(fd_pipe[0][1],1);
                     close(fd_pipe[0][1]);
                     close(fd_pipe[0][0]);
                     execvp(ex[0],ex);
                     _exit(1);
                 }
+                (nPids)++;
                 close(fd_pipe[0][1]);
                 if(maxPipeTime > 0) alarm(maxPipeTime);
                 // Partir o segundo comando
@@ -153,7 +153,7 @@ int executar(char * buf) {
                 indexEx--;
                 ex[indexEx]=NULL;
                 // Execução do ultimo comando
-                if((pid[nPids++] = fork()) == 0) {
+                if((childpids[(nPids)] = fork()) == 0) {
                     dup2(fd_pipe[0][0],0);
                     close(fd_pipe[0][0]);
                     dup2(logs,1);
@@ -161,10 +161,9 @@ int executar(char * buf) {
                     execvp(ex[0],ex);
                     _exit(1);
                 }
+                nPids++;
                 close(fd_pipe[0][0]);
-                for(int x = 0; x < nPids; x++) {
-                    waitpid(pid[x],NULL,WNOHANG);
-                }
+                wait(NULL);
                 _exit(actualStatus);
             }
             if(tempomaxexec > 0)
@@ -172,20 +171,18 @@ int executar(char * buf) {
         }
         // Caso haja 2 ou mais pipes
         else if(nmrPipes > 0) {
-            if((pid[nPids++] = fork()) == 0) {
+            if((childpids[(nPids)++] = fork()) == 0) {
                 actualStatus = 0;
                 statusID = 2;
-                pid = malloc(10 * sizeof(int));
                 nPids = 0;
                 int pipenmr;
                 // Execução do primeiro comando
-                if((pid[nPids++] = fork()) == 0) {
+                if((childpids[(nPids)++] = fork()) == 0) {
                     dup2(fd_pipe[0][1],1);
                     close(fd_pipe[0][1]);
                     execvp(ex[0],ex);
                     _exit(1);
                 }
-                if(maxPipeTime > 0) alarm(maxPipeTime);
                 close(fd_pipe[0][1]);
                 // Execução das n - 1 ultimos comandos, todos encaminnhados por pipes anonimos
                 for(pipenmr = 0; pipenmr < nmrPipes; pipenmr++) {
@@ -197,7 +194,7 @@ int executar(char * buf) {
                     indexEx--;
                     ex[indexEx]=NULL;
                     // Executar o comando
-                    if((pid[nPids++] = fork()) == 0) {
+                    if((childpids[(nPids)++] = fork()) == 0) {
                         dup2(fd_pipe[pipenmr][0],0);
                         dup2(fd_pipe[pipenmr+1][1],1);
                         close(fd_pipe[pipenmr+1][1]);
@@ -205,10 +202,10 @@ int executar(char * buf) {
                         execvp(ex[0],ex);
                         _exit(1);
                     }
-                    if(maxPipeTime > 0) alarm(maxPipeTime);
                     close(fd_pipe[pipenmr][0]);
                     close(fd_pipe[pipenmr+1][1]);
                 }
+                if(maxPipeTime > 0) alarm(maxPipeTime);
                 close(fd_pipe[pipenmr][1]);
                 indexEx = 0;
                 ex[indexEx++] = strtok(line[pipenmr+1]," \n");
@@ -216,7 +213,7 @@ int executar(char * buf) {
                 indexEx--;
                 ex[indexEx] = NULL;
                 // Execução do ultimo comando encaminhando o output para o ficheiro log
-                if((pid[nPids++] = fork()) == 0) {
+                if((childpids[(nPids)++] = fork()) == 0) {
                     dup2(fd_pipe[pipenmr][0],0);
                     close(fd_pipe[pipenmr][0]);
                     dup2(logs,1);
@@ -224,10 +221,7 @@ int executar(char * buf) {
                     execvp(ex[0],ex);
                     _exit(1);
                 }
-                if(maxPipeTime > 0) alarm(maxPipeTime);
-                for(int x = 0; x < nPids; x++) {
-                    waitpid(pid[x],NULL,WNOHANG);
-                }
+                wait(NULL);
                 close(fd_pipe[pipenmr][0]);
                 _exit(actualStatus);
             }
@@ -239,6 +233,7 @@ int executar(char * buf) {
         wait(&status);
         status = WEXITSTATUS(status);
         // Caso tenha havido interrupção por tempo de execução
+        if(status != 2 && actualStatus != 0) status = 1;
         if(status == 0 && actualStatus != 0) status = 1;
         // Envia o estado para o processo pai
         write(fd_pipePro[1],&status,sizeof(int));
@@ -254,7 +249,7 @@ int executar(char * buf) {
 }
 
 // Insere o número da tarefa no array de tarefas em execução e escreve no ficheiro
-// Insere o número do pid da tarefa no array de pids de tarefas
+// Insere o número do childpids da tarefa no array de pids de tarefas
 // Insere o comando da tarefa no array de tarefas
 void adicionarTarefa(int filho, char* buf){
     if(used==tam){

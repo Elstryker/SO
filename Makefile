@@ -20,4 +20,6 @@ Argusd:  functions.o
 		
 
 clean:
-	rm -f *.o argus argusd fifo wr TarefasTerminadas.txt logs.txt log.idx fileTarefa.txt
+	rm -f *.o argus argusd TarefasTerminadas.txt logs.txt log.idx fileTarefa.txt
+	unlink fifo
+	unlink wr
