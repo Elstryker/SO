@@ -13,7 +13,7 @@ extern int fd_pipePro[2]; // Pipe entre processo principal e cada processo filho
 extern int nTarefa; // Número da próxima tarefa
 extern int statusID; // Identificador de tipo erro
 extern int actualStatus; // Estado atual do processo 
-
+extern int interrompida;
 
 // Função que imprime o output da tarefa desejada
 int output(int n,int logs,int wr){
@@ -238,7 +238,7 @@ int executar(char * buf) {
         int status;
         wait(&status);
         status = WEXITSTATUS(status);
-        // Caso houve interrupção por tempo de execução
+        // Caso tenha havido interrupção por tempo de execução
         if(status == 0 && actualStatus != 0) status = 1;
         // Envia o estado para o processo pai
         write(fd_pipePro[1],&status,sizeof(int));
@@ -249,7 +249,7 @@ int executar(char * buf) {
         close(idx);
         _exit(actualStatus);
     }
-    adicionarTarefa(filho, buf);    
+    adicionarTarefa(filho, buf); 
     return 0;
 }
 
@@ -270,8 +270,7 @@ void adicionarTarefa(int filho, char* buf){
     for(int k = 0; k<tam && f==0; k++){
         if(pidsExec[k]==-1){
             nTarefasExec[k] = nTarefa;
-            tarefasExec[k] = malloc(strlen(buf) * sizeof(char));
-            strcpy (tarefasExec[k],buf);
+            tarefasExec[k] =strdup(buf);
             pidsExec[k] = filho;
             nTarefa++;
             used++;
@@ -293,28 +292,29 @@ void adicionarTarefa(int filho, char* buf){
 
 // Mata o filho responsável por uma dada tarefa
 int terminarTarefa(char*command){
-    int k = 1;
+    int i,k = 1,flag=0;
     int tarefasTerminadas;
     if((tarefasTerminadas = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND,0666)) < 0) {
         perror("File not found");
         exit(1);
     }
     int n = atoi(command);
-    for(int i=0; i<used; i++){
-        if(nTarefasExec[i]==n){
+    for(i=0; i<used; i++){
+        if(nTarefasExec[i]==n && flag!=1){
             if(pidsExec[i]!=-1){
                 // Matar tarefa
                 k = kill(pidsExec[i],SIGUSR2);
                 // Copiar para ficheiro de terminadas
                 char* s =  malloc(100*sizeof(char*));
-                sprintf(s, "#%i, Interrompida: %s \n", n, tarefasExec[i]); 
+                sprintf(s, "#%i, Interrompida: %s", n, tarefasExec[i]);
                 write(tarefasTerminadas, s, strlen(s));
-				pidsExec[i] = -1;
-                break;
+                //pidsExec[i] = -1;
+                interrompida=1;
+                flag=1;
             }
         }
  	}
-     close(tarefasTerminadas);
+    close(tarefasTerminadas);
     return k;
 }
 

@@ -13,6 +13,7 @@ int fd_pipePro[2]; // Pipe entre processo principal e cada processo filho
 int nTarefa; // Número da próxima tarefa
 int statusID; // Identificador de tipo estado
 int actualStatus; // Estado atual do processo 
+int interrompida;
 
 void alrm_hand(int signum) {
     actualStatus = statusID;
@@ -42,20 +43,23 @@ void sigusr2_handler(int signum) {
 }
 
 void sigusr1_handler(int signum) {
-    int pidusr, status, x, fd, numTarefa;
+    int pidusr, status, x, fd, numTarefa,flag=0;
     char* buf, *command;
     buf = malloc(200 * sizeof(char));
     // Leitura do tipo de saída do processo filho e do pid do mesmo
     read(fd_pipePro[0],&status,sizeof(int));
+    if(interrompida==1) status=4;
     pidusr = wait(NULL);
     // Extração de informações acerca do processo que o terminou e remoção do mesmo dos processos em execução
-    for(x = 0; x < used; x++) {
+    for(x = 0; x < used && flag !=1 ; x++) {
         if(pidsExec[x] == pidusr) {
             pidsExec[x] = -1;
             command = strdup(tarefasExec[x]);
+            write(1,command,strlen(command));
             free(tarefasExec[x]);
             numTarefa = nTarefasExec[x];
             nTarefasExec[x] = -1;
+            flag=1;
         }
     }
     if((fd = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND, 0666)) < 0) {
@@ -71,11 +75,12 @@ void sigusr1_handler(int signum) {
             sprintf(buf,"#%d, max inatividade: %s",numTarefa,command);
             write(fd,buf,strlen(buf));
         }
-        if(status == 1) {
+        else if(status == 1) {
             sprintf(buf,"#%d, max execucao: %s",numTarefa,command);
             write(fd,buf,strlen(buf));
         }
     }
+    interrompida=0;
     free(buf);
 }
 
@@ -165,9 +170,9 @@ int main(int argc, char const *argv[]) {
             }
             else if(strcmp(option,"-t") == 0 || strcmp(option,"terminar") == 0) {
                 int r = terminarTarefa(buf);
-                if(r==0)  write(wrfifo, "Tarefa terminada", 17);
-                else if (r==-1) write(wrfifo, "Não é possível terminar a tarefa", 36);
-                else write(wrfifo, "Tarefa não está em execução", 32);
+                if(r==0)  write(wrfifo, "Tarefa terminada\n", 18);
+                else if (r==-1) write(wrfifo, "Não é possível terminar a tarefa\n", 37);
+                else write(wrfifo, "Tarefa não está em execução\n", 33);
             }
             else if(strcmp(option,"-r") == 0 || strcmp(option,"historico") == 0) {
                 histTerm(wrfifo);
