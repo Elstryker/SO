@@ -55,7 +55,6 @@ void sigusr1_handler(int signum) {
         if(pidsExec[x] == pidusr) {
             pidsExec[x] = -1;
             command = strdup(tarefasExec[x]);
-            write(1,command,strlen(command));
             free(tarefasExec[x]);
             numTarefa = nTarefasExec[x];
             nTarefasExec[x] = -1;
