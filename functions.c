@@ -13,7 +13,6 @@ extern int fd_pipePro[2]; // Pipe entre processo principal e cada processo filho
 extern int nTarefa; // Número da próxima tarefa
 extern int statusID; // Identificador de tipo erro
 extern int actualStatus; // Estado atual do processo 
-extern int interrompida;
 
 // Função que imprime o output da tarefa desejada
 int output(int n,int logs,int wr){
@@ -249,7 +248,7 @@ int executar(char * buf) {
 }
 
 // Insere o número da tarefa no array de tarefas em execução e escreve no ficheiro
-// Insere o número do childpids da tarefa no array de pids de tarefas
+// Insere o número do pid da tarefa no array de pids de tarefas
 // Insere o comando da tarefa no array de tarefas
 void adicionarTarefa(int filho, char* buf){
     if(used==tam){
@@ -303,9 +302,9 @@ int terminarTarefa(char*command){
                 char* s =  malloc(100*sizeof(char*));
                 sprintf(s, "#%i, Interrompida: %s", n, tarefasExec[i]);
                 write(tarefasTerminadas, s, strlen(s));
-                //pidsExec[i] = -1;
-                interrompida=1;
+                pidsExec[i] = -1;
                 flag=1;
+                wait(NULL);
             }
         }
  	}

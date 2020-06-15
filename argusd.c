@@ -13,7 +13,6 @@ int fd_pipePro[2]; // Pipe entre processo principal e cada processo filho
 int nTarefa; // Número da próxima tarefa
 int statusID; // Identificador de tipo estado
 int actualStatus; // Estado atual do processo 
-int interrompida;
 
 void alrm_hand(int signum) {
     actualStatus = statusID;
@@ -32,23 +31,19 @@ void alrm_hand(int signum) {
 // Sinal que mata os filhos recursivamente e depois mata-se a si próprio
 void sigusr2_handler(int signum) {
     for(int x = 0; x < nPids; x++) {
-        kill(childpids[x],SIGUSR2);
-        wait(NULL);
-    }
-    for(int x = 0; x < nPids; x++) {
         if(childpids[x] != -1)
-            kill(childpids[x],SIGKILL);
+            kill(childpids[x],SIGUSR2);
     }
+    wait(NULL);
     kill(getpid(),SIGKILL);
 }
 
 void sigusr1_handler(int signum) {
-    int pidusr, status, x, fd, numTarefa,flag=0;
+    int pidusr, status, x, fdterminadas, numTarefa,flag=0;
     char* buf, *command;
     buf = malloc(200 * sizeof(char));
     // Leitura do tipo de saída do processo filho e do pid do mesmo
     read(fd_pipePro[0],&status,sizeof(int));
-    if(interrompida==1) status=4;
     pidusr = wait(NULL);
     // Extração de informações acerca do processo que o terminou e remoção do mesmo dos processos em execução
     for(x = 0; x < used && flag !=1 ; x++) {
@@ -61,25 +56,28 @@ void sigusr1_handler(int signum) {
             flag=1;
         }
     }
-    if((fd = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND, 0666)) < 0) {
+    printf("Handler\n");
+    printf("%d\n",pidusr);
+    printf("%d\n",status);
+    if((fdterminadas = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND, 0666)) < 0) {
         perror("File not found");
     }
     // Escrita no ficheiro de historico
     else {
         if(status == 0) {
             sprintf(buf,"#%d, concluida: %s",numTarefa,command);
-            write(fd,buf,strlen(buf));
+            write(fdterminadas,buf,strlen(buf));
         }
         else if(status == 2) {
             sprintf(buf,"#%d, max inatividade: %s",numTarefa,command);
-            write(fd,buf,strlen(buf));
+            write(fdterminadas,buf,strlen(buf));
         }
         else if(status == 1) {
             sprintf(buf,"#%d, max execucao: %s",numTarefa,command);
-            write(fd,buf,strlen(buf));
+            write(fdterminadas,buf,strlen(buf));
         }
     }
-    interrompida=0;
+    close(fdterminadas);
     free(buf);
 }
 
