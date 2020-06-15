@@ -40,9 +40,11 @@ void shellInterpreter(int fdToServer) {
     int flag = 1;
     buf = malloc(100 * sizeof(char));
     option = malloc(25 * sizeof(char));
+    printf("Main pid: %d\n",getpid());
     while((bytesRead = read(0,buf,100)) > 0) {
         if(compareNString(buf,"sair\n",5)== 0) break;
         if(fork() == 0) {
+            printf("childPid : %d\n",getpid());
             flag = 1;
             buf = separateString(option,buf,&bytesRead);
             // Validação do comando lido
@@ -74,7 +76,8 @@ void shellInterpreter(int fdToServer) {
                 close(fdFromServer);
             }
             _exit(0);
-        }        
+        }
+        wait(NULL);        
     }
     free(buf); 
     free(option);

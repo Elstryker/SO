@@ -56,9 +56,6 @@ void sigusr1_handler(int signum) {
             flag=1;
         }
     }
-    printf("Handler\n");
-    printf("%d\n",pidusr);
-    printf("%d\n",status);
     if((fdterminadas = open("../SO/TarefasTerminadas.txt",O_WRONLY | O_CREAT | O_APPEND, 0666)) < 0) {
         perror("File not found");
     }
